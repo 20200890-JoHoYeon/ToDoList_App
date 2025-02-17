@@ -12,9 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
-
+@Preview//@Preview 주석이 달린 구성 가능한 함수를 사용하여 UI를 미리보기
 @Composable
 fun Page2GalleryScreen() {
     MyApplicationTheme {

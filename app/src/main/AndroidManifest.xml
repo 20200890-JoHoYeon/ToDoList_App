@@ -24,8 +24,6 @@
             </intent-filter>
         </activity>
         <!-- screens 패키지에 있는 액티비티들 등록 -->
-        <activity android:name=".ui.screens.Page1ListScreen" />
-        <activity android:name=".ui.screens.Page2GalleryScreen" />
 
 
     </application>

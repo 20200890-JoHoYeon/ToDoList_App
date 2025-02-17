@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,14 +23,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+
+@Preview//@Preview 주석이 달린 구성 가능한 함수를 사용하여 UI를 미리보기
+@Composable
+fun HomeScreenPreview() {
+    // NavController를 모킹해서 전달
+    val navController = rememberNavController() // 여기서는 실제 NavController를 사용하지 않아도 됩니다.
+
+    HomeScreen(navController = navController)
+}
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -88,6 +100,20 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier.width(250.dp)
             ) {
                 Text("Gallery")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black, // 버튼의 배경 색상
+                    contentColor = Color.White,   // 버튼 내부 텍스트 색상
+                    disabledContainerColor = Color.Gray, // 비활성 상태의 배경 색상
+                    disabledContentColor = Color.LightGray // 비활성 상태의 텍스트 색상
+                ),
+                onClick = { navController.navigate("page3") },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.width(250.dp)
+            ) {
+                Text("Hello")
             }
         }
     }
