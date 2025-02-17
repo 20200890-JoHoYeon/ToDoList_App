@@ -24,10 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.myapplication.R
 
 @Composable
-fun HomeScreen(navigateToPage1: () -> Unit, navigateToPage2: () -> Unit) {
+fun HomeScreen(navController: NavController) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
@@ -68,7 +69,7 @@ fun HomeScreen(navigateToPage1: () -> Unit, navigateToPage2: () -> Unit) {
                     disabledContainerColor = Color.Gray, // 비활성 상태의 배경 색상
                     disabledContentColor = Color.LightGray // 비활성 상태의 텍스트 색상
                 ),
-                onClick = navigateToPage1, shape = RoundedCornerShape(12.dp),
+                onClick = { navController.navigate("page1") }, shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.width(250.dp),
 
                 ) {
@@ -82,7 +83,7 @@ fun HomeScreen(navigateToPage1: () -> Unit, navigateToPage2: () -> Unit) {
                     disabledContainerColor = Color.Gray, // 비활성 상태의 배경 색상
                     disabledContentColor = Color.LightGray // 비활성 상태의 텍스트 색상
                 ),
-                onClick = navigateToPage2,
+                onClick = { navController.navigate("page2") },
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.width(250.dp)
             ) {

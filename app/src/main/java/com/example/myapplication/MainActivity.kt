@@ -7,6 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.screens.HomeScreen
 import com.example.myapplication.ui.screens.Page1ListScreen
@@ -18,11 +21,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                HomeScreen(
-                    navigateToPage1 = { startActivity(Intent(this, Page1ListScreen::class.java)) },
-                    navigateToPage2 = { startActivity(Intent(this, Page2GalleryScreen::class.java)) }
-
-                )
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = "home"
+                ) {
+                    composable("home") { HomeScreen(navController) }
+                    composable("page1") { Page1ListScreen() }
+                    composable("page2") { Page2GalleryScreen() }
+                }
             }
         }
     }
@@ -36,7 +43,8 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
+    val navController = rememberNavController() // NavController 생성
     MyApplicationTheme {
-        HomeScreen({}, {})
+        HomeScreen(navController) // NavController 전달
     }
 }
