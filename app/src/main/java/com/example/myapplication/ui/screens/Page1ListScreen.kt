@@ -400,7 +400,7 @@ fun ItemRow(
                 onCheckedChange = { isChecked ->
                     checked = isChecked
                     onCheckedChange(isChecked, item) // 체크 상태 변경 시 호출
-
+                    checked = false
                 },
                 modifier = Modifier.size(40.dp), // 체크박스 크기 조정
                 colors = CheckboxDefaults.colors(
