@@ -1,15 +1,23 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# Kotlin을 주요 언어로 감지
+*.kt linguist-detectable
+
+# Java 파일이 우선적으로 인식될 경우 Kotlin 강조
+*.java linguist-vendored
+
+# Gradle 및 IDE 관련 설정 파일 제외
+*.iml linguist-vendored
+.gradle linguist-vendored
+/local.properties linguist-vendored
+/.idea/caches linguist-vendored
+/.idea/libraries linguist-vendored
+/.idea/modules.xml linguist-vendored
+/.idea/workspace.xml linguist-vendored
+/.idea/navEditor.xml linguist-vendored
+/.idea/assetWizardSettings.xml linguist-vendored
+.DS_Store linguist-vendored
+
+# 빌드 관련 파일 제외
+/build linguist-vendored
+/captures linguist-vendored
+.externalNativeBuild linguist-vendored
+.cxx linguist-vendored
