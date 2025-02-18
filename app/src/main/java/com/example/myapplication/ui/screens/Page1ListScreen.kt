@@ -172,7 +172,11 @@ fun PageContent(
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
-            colors = TextFieldDefaults.textFieldColors(containerColor = Color.White),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color.White
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 20.dp, top = 16.dp, end = 20.dp)
@@ -185,7 +189,11 @@ fun PageContent(
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
-            colors = TextFieldDefaults.textFieldColors(containerColor = Color.White),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color.White
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 20.dp, top = 16.dp, end = 20.dp)
