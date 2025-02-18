@@ -37,3 +37,4 @@ Click [here](https://web.wonnytopper.co.kr/) to visit my project.
 ![이미지](https://github.com/20200890-JoHoYeon/wonnytopper/assets/70556072/a8e47230-a1af-480d-8d3c-a75a2dd4ab23)
 
 Finally, I will register a photo showing the progress of the project. Thank you for your review. 😘-->
+사용한 logo, icon, img 출처 <a href="https://www.freepik.com/sticker/planner_8764762">Icon by bukeicon</a>
