@@ -40,7 +40,9 @@ android {
 }
 
 dependencies {
-
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.24.13-rc") // 최신 버전 확인 필요
+    implementation ("androidx.compose.foundation:foundation:1.3.0")
+    implementation ("androidx.compose.material3:material3:1.0.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

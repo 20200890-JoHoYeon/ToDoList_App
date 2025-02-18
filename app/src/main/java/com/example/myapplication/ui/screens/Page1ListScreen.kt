@@ -28,20 +28,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import java.time.format.DateTimeFormatter
-import androidx.compose.material.*
 
-
-data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(val author: String, val content: String, val date: String)
+data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(val title: String, val content: String, val date: String)
 @RequiresApi(Build.VERSION_CODES.O)
 fun getCurrentDate(): String {
     val currentDateTime = java.time.LocalDateTime.now() // 현재 날짜와 시간
-    val formatter = DateTimeFormatter.ofPattern("MM-dd-HH-mm-ss")
+    val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
     return currentDateTime.format(formatter)
 }
 
@@ -115,7 +114,7 @@ fun BottomBar(
                         textInput.value = ""
                         userInput.value = ""
                     } else if (userInput.value.isEmpty()) {
-                        Toast.makeText(context, "작성자를 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
                     } else if (textInput.value.isEmpty()) {
                         Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
                     }
@@ -169,7 +168,7 @@ fun PageContent(
                     Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
                 }
             },
-            label = { Text("Enter text") },
+            label = { Text("Enter Title") },
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
@@ -195,13 +194,31 @@ fun PageContent(
         var isTodoExpanded by remember { mutableStateOf(true) } // for the "진행중인 ToDo" section
         var isCompletedTodoExpanded by remember { mutableStateOf(false) } // for the "완료된 ToDo" section
 
+
+        // Add the onDeleteItem function to remove an item from CompletionItems
+        val onDeleteItem: (ItemData) -> Unit = { itemToDelete ->
+            // Check if the item is in CompletionItems
+            if (CompletionItems.contains(itemToDelete)) {
+                CompletionItems.remove(itemToDelete)
+                Toast.makeText(context, "아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+            // Check if the item is in items (In-progress ToDo)
+            else if (items.contains(itemToDelete)) {
+                items.remove(itemToDelete)
+                Toast.makeText(context, "아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                // If item is not found in either list
+                Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         Column(modifier = Modifier.fillMaxSize()) {
             // 진행중인 ToDo title and IconButton in a Row with clickable Text
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 16.dp),
-                horizontalArrangement = Arrangement.Start,
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -210,6 +227,7 @@ fun PageContent(
                     fontSize = 16.sp,
                     color = if (items.isEmpty()) Color.LightGray else Color.Black, // Change color based on item count
                     modifier = Modifier
+                        .padding(start = 20.dp)
                         .weight(1f) // Allow title to take up available space
                         .clickable {
                             isTodoExpanded =
@@ -232,6 +250,13 @@ fun PageContent(
                             color = Color.White
                         )
                     }
+                    if (items.size == 1) {
+                        isTodoExpanded = true
+                    }
+
+                }
+                else {
+                    isTodoExpanded = false
                 }
 
                 IconButton(onClick = { isTodoExpanded = !isTodoExpanded }) {
@@ -250,31 +275,31 @@ fun PageContent(
                         .weight(1f)
                 ) {
                     items(items) { item ->
-                        SwipeToDeleteItem(
+                        ItemRow(
                             item = item,
-                            onDelete = { items.remove(item) }, // 진행 중 리스트에서 삭제
+                            context=context,
                             isInProgress = true,
+                            onDelete = onDeleteItem,
                             onCheckedChange = { checked, item ->
                                 if (checked) {
                                     val completionDateTime = getCurrentDate()
-                                    CompletionItems.add(ItemData(item.author, item.content, completionDateTime))
+                                    CompletionItems.add(ItemData(item.title, item.content, completionDateTime))
                                     items.remove(item)
                                     Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
                     }
-
                 }
             }
 
-
             // 완료된 ToDo title and IconButton in a Row with clickable Text
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 16.dp),
-                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier.run {
+                    fillMaxWidth()
+                        .padding(top = 16.dp)
+                },
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -283,6 +308,7 @@ fun PageContent(
                     fontSize = 16.sp,
                     color = if (CompletionItems.isEmpty()) Color.LightGray else Color.Black, // Change color based on item count
                     modifier = Modifier
+                        .padding(start = 20.dp)
                         .weight(1f)
                         .clickable {
                             isCompletedTodoExpanded =
@@ -304,7 +330,14 @@ fun PageContent(
                             color = Color.White
                         )
                     }
+                    if (CompletionItems.size == 1) {
+                        isCompletedTodoExpanded = true
+                    }
                 }
+                else {
+                    isCompletedTodoExpanded = false
+                }
+
 
                 IconButton(onClick = { isCompletedTodoExpanded = !isCompletedTodoExpanded }) {
                     Icon(
@@ -322,62 +355,25 @@ fun PageContent(
                         .weight(1f)
                 ) {
                     items(CompletionItems) { item ->
-                        SwipeToDeleteItem(
+                        ItemRow (
                             item = item,
-                            onDelete = { CompletionItems.remove(item) }, // 완료 리스트에서 삭제
+                            context=context,
                             isInProgress = false,
+                            onDelete = onDeleteItem,
                             onCheckedChange = { checked, item ->
                                 if (!checked) {
                                     val currentDateTime = getCurrentDate()
-                                    items.add(ItemData(item.author, item.content, currentDateTime))
+                                    items.add(ItemData(item.title, item.content, currentDateTime))
                                     CompletionItems.remove(item)
                                     Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
                     }
-
                 }
             }
-
         }
     }
-
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SwipeToDeleteItem(
-    item: ItemData,
-    onDelete: () -> Unit,
-    isInProgress: Boolean,
-    onCheckedChange: (Boolean, ItemData) -> Unit
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) { // 왼쪽으로 스와이프 시 삭제
-                onDelete()
-                true
-            } else {
-                false
-            }
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-
-            }
-        },
-        content = {
-            ItemRow(item, isInProgress, onCheckedChange)
-        }
-    )
 }
 
 @Composable
@@ -385,7 +381,8 @@ fun ItemRow(
     item: ItemData,
     isInProgress: Boolean,
     onCheckedChange: (Boolean, ItemData) -> Unit,
-
+    context: Context,
+    onDelete: (ItemData) -> Unit // Add this parameter to handle deletion
 ) {
     var checked by remember { mutableStateOf(false) }
 
@@ -395,6 +392,7 @@ fun ItemRow(
     } else {
         Color.White.copy(alpha = 0.5f) // 완료된 항목은 투명도 적용
     }
+    val dateParts = item.date.split(" ")
 
     Row(
         modifier = Modifier
@@ -406,45 +404,82 @@ fun ItemRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column() {
-            Text(
-                text = "작성자: ${item.author}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = Color(0xFF2A4174)
+        // Checkbox takes 1/6 of the Row width
+        Checkbox(
+            checked = if (!isInProgress) true else checked,
+            onCheckedChange = { isChecked ->
+                checked = isChecked
+                onCheckedChange(isChecked, item) // Handle checked change
+                checked = false
+            },
+            modifier = Modifier
+                .size(70.dp)
+                .weight(1f),  // 1등분 차지
+            colors = CheckboxDefaults.colors(
+                checkedColor = Color.Blue,
+                uncheckedColor = Color.Gray
             )
-            Text(
-                text = "내용: ${item.content}",
-                fontSize = 14.sp,
-                color = Color.Black,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-        Column(
-            horizontalAlignment = Alignment.End,
+        )
 
+        // First Column (Title and Content) takes the remaining space
+        Column(
+            modifier = Modifier
+                .weight(3f)  // 제목과 내용이 차지할 비율
+                .padding(start = 16.dp)
         ) {
             Text(
-                text = item.date,
+                text = item.title,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color(0xFF2A4174),
+                maxLines = 1,  // 한 줄로 제한 (길면 생략부호 처리 가능)
+                overflow = TextOverflow.Ellipsis  // 넘치면 ... 처리
+            )
+            Text(
+                text = item.content,
                 fontSize = 14.sp,
                 color = Color.Black,
+                modifier = Modifier.padding(top = 4.dp),
 
             )
+        }
 
-            // isInProgress가 false일 때 체크박스가 체크된 것처럼 보이게 함
-            Checkbox(
-                checked = if (!isInProgress) true else checked, // 진행 중이 아니면 체크 표시되도록
-                onCheckedChange = { isChecked ->
-                    checked = isChecked
-                    onCheckedChange(isChecked, item) // 체크 상태 변경 시 호출
-                    checked = false
-                },
-                modifier = Modifier.size(40.dp), // 체크박스 크기 조정
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color.Blue, // 체크된 상태 색상
-                    uncheckedColor = Color.Gray // 체크되지 않은 상태 색상
-                )
+        // Second Column (Date and Delete Button) takes 2/6 of the Row width
+        Column(
+            modifier = Modifier
+                .weight(2f)  // 2등분 차지
+                .padding(start = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 년-월-일 표시
+            Text(
+                text = dateParts.getOrNull(0) ?: "",
+                fontSize = 14.sp,
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
             )
+
+            Spacer(modifier = Modifier.height(4.dp))  // 두 줄 사이에 여백 추가
+
+            // 시간:분:초 표시
+            Text(
+                text = dateParts.getOrNull(1) ?: "",
+                fontSize = 14.sp,
+                color = Color.Black,
+            )
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                onClick = {
+                    onDelete(item) // Call onDelete when the delete button is clicked
+                }
+            ) {
+                Text(text = "Delete")
+            }
         }
     }
 }
+
+
