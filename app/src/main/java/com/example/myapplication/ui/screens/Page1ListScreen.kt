@@ -26,8 +26,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -140,7 +142,6 @@ fun BottomBar(
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PageContent(
     innerPadding: PaddingValues,
@@ -157,30 +158,31 @@ fun PageContent(
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(
-            value = userInput.value,
-            onValueChange = {
-                // 텍스트 길이가 최대 길이보다 작으면 업데이트
-                if (it.length <= 10) {
-                    userInput.value = it
-                }
-                else {
-                    Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            label = { Text("Enter Title") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done
-            ),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, top = 16.dp, end = 20.dp)
-        )
+
+            TextField(
+                value = userInput.value,
+                onValueChange = {
+                    // 텍스트 길이가 최대 길이보다 작으면 업데이트
+                    if (it.length <= 10) {
+                        userInput.value = it
+                    } else {
+                        Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                label = { Text("Enter Title") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, top = 16.dp, end = 20.dp),
+            )
+
 
         TextField(
             value = textInput.value,
@@ -196,7 +198,7 @@ fun PageContent(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, top = 16.dp, end = 20.dp)
+                .padding(start = 20.dp, top = 16.dp, end = 20.dp),
         )
 
         var isTodoExpanded by remember { mutableStateOf(true) } // for the "진행중인 ToDo" section
@@ -208,12 +210,12 @@ fun PageContent(
             // Check if the item is in CompletionItems
             if (CompletionItems.contains(itemToDelete)) {
                 CompletionItems.remove(itemToDelete)
-                Toast.makeText(context, "아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             }
             // Check if the item is in items (In-progress ToDo)
             else if (items.contains(itemToDelete)) {
                 items.remove(itemToDelete)
-                Toast.makeText(context, "아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "진행중인 ToDO 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             } else {
                 // If item is not found in either list
                 Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
@@ -238,13 +240,17 @@ fun PageContent(
                         .padding(start = 20.dp)
                         .weight(1f) // Allow title to take up available space
                         .clickable {
-                            isTodoExpanded =
-                                !isTodoExpanded // Toggle expand/collapse when the text is clicked
+                            if (items.size > 1 || !isTodoExpanded) {
+                                isTodoExpanded = !isTodoExpanded // 클릭 시 확장/축소
+                            }
                         }
                 )
 
                 // Show item count next to the title
                 if (items.isNotEmpty()) {
+                    if (items.size == 1 && !isTodoExpanded) {
+                        isTodoExpanded = true
+                    }
                     Box(
                         modifier = Modifier
                             .padding(start = 8.dp)
@@ -258,16 +264,15 @@ fun PageContent(
                             color = Color.White
                         )
                     }
-                    if (items.size == 1) {
-                        isTodoExpanded = true
-                    }
-
                 }
                 else {
                     isTodoExpanded = false
                 }
 
-                IconButton(onClick = { isTodoExpanded = !isTodoExpanded }) {
+                IconButton(
+                    onClick = { isTodoExpanded = !isTodoExpanded },
+                    modifier = if (items.isEmpty()) Modifier.alpha(0.5f) else Modifier.alpha(1f)
+                ) {
                     Icon(
                         imageVector = if (isTodoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Expand/Collapse"
@@ -319,12 +324,16 @@ fun PageContent(
                         .padding(start = 20.dp)
                         .weight(1f)
                         .clickable {
-                            isCompletedTodoExpanded =
-                                !isCompletedTodoExpanded
+                            if (CompletionItems.size > 1 || !isCompletedTodoExpanded) {
+                                isCompletedTodoExpanded = !isCompletedTodoExpanded // 클릭 시 확장/축소
+                            }
                         }
                 )
 
                 if (CompletionItems.isNotEmpty()) {
+                    if (CompletionItems.size == 1 && !isCompletedTodoExpanded) {
+                        isCompletedTodoExpanded = true
+                    }
                     Box(
                         modifier = Modifier
                             .padding(start = 8.dp)
@@ -338,16 +347,16 @@ fun PageContent(
                             color = Color.White
                         )
                     }
-                    if (CompletionItems.size == 1) {
-                        isCompletedTodoExpanded = true
-                    }
                 }
                 else {
                     isCompletedTodoExpanded = false
                 }
 
 
-                IconButton(onClick = { isCompletedTodoExpanded = !isCompletedTodoExpanded }) {
+                IconButton(
+                    onClick = { isTodoExpanded = !isTodoExpanded },
+                    modifier = if (items.isEmpty()) Modifier.alpha(0.5f) else Modifier.alpha(1f)
+                ) {
                     Icon(
                         imageVector = if (isCompletedTodoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Expand/Collapse"
@@ -421,8 +430,8 @@ fun ItemRow(
                 checked = false
             },
             modifier = Modifier
-                .size(70.dp)
-                .weight(1f),  // 1등분 차지
+                .size(50.dp)
+                .weight(0.5f),  // 1등분 차지
             colors = CheckboxDefaults.colors(
                 checkedColor = Color.Blue,
                 uncheckedColor = Color.Gray
@@ -447,8 +456,10 @@ fun ItemRow(
                 text = item.content,
                 fontSize = 14.sp,
                 color = Color.Black,
-                modifier = Modifier.padding(top = 4.dp),
-
+                modifier = Modifier.padding(top = 4.dp).fillMaxWidth(),
+                style = TextStyle(
+                    lineBreak = LineBreak.Paragraph,
+                )
             )
         }
 
