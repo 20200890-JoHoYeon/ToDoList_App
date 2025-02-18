@@ -1,9 +1,11 @@
 package com.example.myapplication
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
@@ -16,6 +18,7 @@ import com.example.myapplication.ui.screens.Page2GalleryScreen
 import com.example.myapplication.ui.screens.Page3HelloScreen
 
 class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose와 함께 사용할 수 있도록 제공되는 Activity의 확장 클래스
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {//onCreate는 액티비티가 처음 생성될 때 호출되는 메서드 super.onCreate(savedInstanceState)를 호출
         super.onCreate(savedInstanceState)//부모 클래스의 기본 동작을 수행
         enableEdgeToEdge() //안드로이드 시스템 바(edge-to-edge) 적용(화면을 전체화면으로 설정, 네비게이션 바 및 상태 바를 투명하게 만들고 앱 UI가 화면 끝까지 차지)
@@ -40,7 +43,7 @@ class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose
 
 
 
-
+//모킹
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {

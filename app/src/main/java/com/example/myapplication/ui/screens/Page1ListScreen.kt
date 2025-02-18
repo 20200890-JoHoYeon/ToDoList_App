@@ -3,7 +3,6 @@ package com.example.myapplication.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -35,7 +34,8 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import java.time.format.DateTimeFormatter
-import kotlin.math.log
+import androidx.compose.material.*
+
 
 data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(val author: String, val content: String, val date: String)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -61,7 +61,7 @@ fun Page1ListScreen() {
         topBar = { TopBar() },
         bottomBar = { BottomBar(userInput, textInput, items, context) },
         content = { innerPadding ->
-            PageContent(innerPadding, userInput, textInput, items, CompletionItems)
+            PageContent(innerPadding, userInput, textInput, items, CompletionItems, context)
         }
     )
 }
@@ -119,10 +119,12 @@ fun BottomBar(
                     } else if (textInput.value.isEmpty()) {
                         Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
                     }
+                    Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
                 }
             ) {
                 Text(text = "Add Item")
             }
+
             Button(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,
@@ -132,19 +134,8 @@ fun BottomBar(
                     context.startActivity(Intent(context, MainActivity::class.java))
                 }
             ) {
-                Text(text = "Delete Item")
+                Text(text = "Go Home")
             }
-//            Button(
-//                colors = ButtonDefaults.buttonColors(
-//                    containerColor = Color.Black,
-//                    contentColor = Color.White
-//                ),
-//                onClick = {
-//                    context.startActivity(Intent(context, MainActivity::class.java))
-//                }
-//            ) {
-//                Text(text = "Go Home")
-//            }
         }
     }
 }
@@ -157,7 +148,8 @@ fun PageContent(
     userInput: MutableState<String>,
     textInput: MutableState<String>,
     items: SnapshotStateList<ItemData>,
-    CompletionItems: SnapshotStateList<ItemData>
+    CompletionItems: SnapshotStateList<ItemData>,
+    context: Context
 ) {
     Column(
         modifier = Modifier
@@ -168,8 +160,16 @@ fun PageContent(
     ) {
         TextField(
             value = userInput.value,
-            onValueChange = { userInput.value = it },
-            label = { Text("Enter Author") },
+            onValueChange = {
+                // 텍스트 길이가 최대 길이보다 작으면 업데이트
+                if (it.length <= 10) {
+                    userInput.value = it
+                }
+                else {
+                    Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
+                }
+            },
+            label = { Text("Enter text") },
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
@@ -196,7 +196,6 @@ fun PageContent(
         var isCompletedTodoExpanded by remember { mutableStateOf(false) } // for the "완료된 ToDo" section
 
         Column(modifier = Modifier.fillMaxSize()) {
-
             // 진행중인 ToDo title and IconButton in a Row with clickable Text
             Row(
                 modifier = Modifier
@@ -251,24 +250,21 @@ fun PageContent(
                         .weight(1f)
                 ) {
                     items(items) { item ->
-                        ItemRow(
+                        SwipeToDeleteItem(
                             item = item,
+                            onDelete = { items.remove(item) }, // 진행 중 리스트에서 삭제
                             isInProgress = true,
                             onCheckedChange = { checked, item ->
                                 if (checked) {
                                     val completionDateTime = getCurrentDate()
-                                    CompletionItems.add(
-                                        ItemData(
-                                            item.author,
-                                            item.content,
-                                            completionDateTime
-                                        )
-                                    )
+                                    CompletionItems.add(ItemData(item.author, item.content, completionDateTime))
                                     items.remove(item)
+                                    Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
                     }
+
                 }
             }
 
@@ -325,20 +321,22 @@ fun PageContent(
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    items(CompletionItems) { CompletionItem ->
-                        ItemRow(
-                            item = CompletionItem,
-                            isInProgress = false,  // 완료된 항목
+                    items(CompletionItems) { item ->
+                        SwipeToDeleteItem(
+                            item = item,
+                            onDelete = { CompletionItems.remove(item) }, // 완료 리스트에서 삭제
+                            isInProgress = false,
                             onCheckedChange = { checked, item ->
-                                if (checked == false) {
-                                    // 완료된 항목을 진행 중으로 다시 이동
+                                if (!checked) {
                                     val currentDateTime = getCurrentDate()
-                                    items.add(ItemData(item.author, item.content, currentDateTime)) // 진행 중 항목으로 추가
-                                    CompletionItems.remove(item) // 완료된 항목에서 제거
+                                    items.add(ItemData(item.author, item.content, currentDateTime))
+                                    CompletionItems.remove(item)
+                                    Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
                     }
+
                 }
             }
 
@@ -346,11 +344,48 @@ fun PageContent(
     }
 
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeToDeleteItem(
+    item: ItemData,
+    onDelete: () -> Unit,
+    isInProgress: Boolean,
+    onCheckedChange: (Boolean, ItemData) -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) { // 왼쪽으로 스와이프 시 삭제
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+
+            }
+        },
+        content = {
+            ItemRow(item, isInProgress, onCheckedChange)
+        }
+    )
+}
+
 @Composable
 fun ItemRow(
     item: ItemData,
     isInProgress: Boolean,
-    onCheckedChange: (Boolean, ItemData) -> Unit
+    onCheckedChange: (Boolean, ItemData) -> Unit,
+
 ) {
     var checked by remember { mutableStateOf(false) }
 
@@ -386,12 +421,14 @@ fun ItemRow(
             )
         }
         Column(
-            horizontalAlignment = Alignment.End
+            horizontalAlignment = Alignment.End,
+
         ) {
             Text(
                 text = item.date,
                 fontSize = 14.sp,
-                color = Color.Black
+                color = Color.Black,
+
             )
 
             // isInProgress가 false일 때 체크박스가 체크된 것처럼 보이게 함
