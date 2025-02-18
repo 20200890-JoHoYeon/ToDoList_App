@@ -53,16 +53,38 @@ fun Page1ListScreen() {
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
     val items = remember { mutableStateListOf<ItemData>() }
-    val CompletionItems = remember { mutableStateListOf<ItemData>() }
+    val completionItems = remember { mutableStateListOf<ItemData>() }
     val context = LocalContext.current
+
+    // 상태 변수 선언 (Page1ListScreen에서 관리)
+    val isTodoExpanded = remember { mutableStateOf(false) }
+    val isCompletedTodoExpanded = remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = Color.White,
         modifier = Modifier.fillMaxSize().background(color = Color.White),
         topBar = { TopBar() },
-        bottomBar = { BottomBar(userInput, textInput, items, context) },
+        bottomBar = {
+            BottomBar(
+                userInput = userInput,
+                textInput = textInput,
+                items = items,
+                context = context,
+                isTodoExpanded = isTodoExpanded,  // 상태 전달
+
+            )
+        },
         content = { innerPadding ->
-            PageContent(innerPadding, userInput, textInput, items, CompletionItems, context)
+            PageContent(
+                innerPadding = innerPadding,
+                userInput = userInput,
+                textInput = textInput,
+                items = items,
+                completionItems = completionItems,
+                context = context,
+                isTodoExpanded = isTodoExpanded,  // 상태 전달
+                isCompletedTodoExpanded = isCompletedTodoExpanded  // 상태 전달
+            )
         }
     )
 }
@@ -91,7 +113,9 @@ fun BottomBar(
     userInput: MutableState<String>,
     textInput: MutableState<String>,
     items: SnapshotStateList<ItemData>,
-    context: Context
+    context: Context,
+    isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
+
 ) {
     BottomAppBar(
         containerColor = Color.White,
@@ -121,6 +145,9 @@ fun BottomBar(
                         Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
                     }
                     Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+                    if (!isTodoExpanded.value) {
+                        isTodoExpanded.value = true
+                    }
                 }
             ) {
                 Text(text = "Add Item")
@@ -148,9 +175,36 @@ fun PageContent(
     userInput: MutableState<String>,
     textInput: MutableState<String>,
     items: SnapshotStateList<ItemData>,
-    CompletionItems: SnapshotStateList<ItemData>,
-    context: Context
+    completionItems: SnapshotStateList<ItemData>,
+    context: Context,
+    isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
+    isCompletedTodoExpanded: MutableState<Boolean>  // 상태 값은 MutableState로 받아야 함
 ) {
+
+    // Function to add item to completionItems and manage the expanded state
+    val addItemToCompleted = { item: ItemData ->
+        val completionDateTime = getCurrentDate()
+        completionItems.add(ItemData(item.title, item.content, completionDateTime))
+        Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+
+        // Ensure the completed ToDo section is expanded if necessary
+        if (!isCompletedTodoExpanded.value) {
+            isCompletedTodoExpanded.value = true
+        }
+    }
+
+    // Function to add item to items (in-progress list) and manage the expanded state
+    val addItemToInProgress = { item: ItemData ->
+        val currentDateTime = getCurrentDate()
+        items.add(ItemData(item.title, item.content, currentDateTime))
+        Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+
+        // Ensure the in-progress ToDo section is expanded if necessary
+        if (!isTodoExpanded.value) {
+            isTodoExpanded.value = true
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -158,31 +212,29 @@ fun PageContent(
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-            TextField(
-                value = userInput.value,
-                onValueChange = {
-                    // 텍스트 길이가 최대 길이보다 작으면 업데이트
-                    if (it.length <= 10) {
-                        userInput.value = it
-                    } else {
-                        Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                label = { Text("Enter Title") },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, top = 16.dp, end = 20.dp),
-            )
-
+        TextField(
+            value = userInput.value,
+            onValueChange = {
+                // 텍스트 길이가 최대 길이보다 작으면 업데이트
+                if (it.length <= 10) {
+                    userInput.value = it
+                } else {
+                    Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
+                }
+            },
+            label = { Text("Enter Title") },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            ),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color.White
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, top = 16.dp, end = 20.dp),
+        )
 
         TextField(
             value = textInput.value,
@@ -201,29 +253,21 @@ fun PageContent(
                 .padding(start = 20.dp, top = 16.dp, end = 20.dp),
         )
 
-        var isTodoExpanded by remember { mutableStateOf(true) } // for the "진행중인 ToDo" section
-        var isCompletedTodoExpanded by remember { mutableStateOf(false) } // for the "완료된 ToDo" section
 
-
-        // Add the onDeleteItem function to remove an item from CompletionItems
+        // Add the onDeleteItem function to remove an item from completionItems
         val onDeleteItem: (ItemData) -> Unit = { itemToDelete ->
-            // Check if the item is in CompletionItems
-            if (CompletionItems.contains(itemToDelete)) {
-                CompletionItems.remove(itemToDelete)
+            if (completionItems.contains(itemToDelete)) {
+                completionItems.remove(itemToDelete)
                 Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-            }
-            // Check if the item is in items (In-progress ToDo)
-            else if (items.contains(itemToDelete)) {
+            } else if (items.contains(itemToDelete)) {
                 items.remove(itemToDelete)
                 Toast.makeText(context, "진행중인 ToDO 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             } else {
-                // If item is not found in either list
                 Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // 진행중인 ToDo title and IconButton in a Row with clickable Text
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -235,22 +279,18 @@ fun PageContent(
                     text = "진행중인 ToDo",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = if (items.isEmpty()) Color.LightGray else Color.Black, // Change color based on item count
+                    color = if (items.isEmpty()) Color.LightGray else Color.Black,
                     modifier = Modifier
                         .padding(start = 20.dp)
-                        .weight(1f) // Allow title to take up available space
+                        .weight(1f)
                         .clickable {
-                            if (items.size > 1 || !isTodoExpanded) {
-                                isTodoExpanded = !isTodoExpanded // 클릭 시 확장/축소
+                            if (items.size > 1 || !isTodoExpanded.value) {
+                                isTodoExpanded.value = !isTodoExpanded.value
                             }
                         }
                 )
 
-                // Show item count next to the title
                 if (items.isNotEmpty()) {
-                    if (items.size == 1 && !isTodoExpanded) {
-                        isTodoExpanded = true
-                    }
                     Box(
                         modifier = Modifier
                             .padding(start = 8.dp)
@@ -264,24 +304,22 @@ fun PageContent(
                             color = Color.White
                         )
                     }
-                }
-                else {
-                    isTodoExpanded = false
+                } else {
+                    isTodoExpanded.value = false
                 }
 
                 IconButton(
-                    onClick = { isTodoExpanded = !isTodoExpanded },
+                    onClick = { isTodoExpanded.value = !isTodoExpanded.value },
                     modifier = if (items.isEmpty()) Modifier.alpha(0.5f) else Modifier.alpha(1f)
                 ) {
                     Icon(
-                        imageVector = if (isTodoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        imageVector = if (isTodoExpanded.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Expand/Collapse"
                     )
                 }
             }
 
-            // 진행중인 ToDo items
-            if (isTodoExpanded) {
+            if (isTodoExpanded.value) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -290,15 +328,12 @@ fun PageContent(
                     items(items) { item ->
                         ItemRow(
                             item = item,
-                            context=context,
                             isInProgress = true,
                             onDelete = onDeleteItem,
                             onCheckedChange = { checked, item ->
                                 if (checked) {
-                                    val completionDateTime = getCurrentDate()
-                                    CompletionItems.add(ItemData(item.title, item.content, completionDateTime))
+                                    addItemToCompleted(item) // Add to completed list
                                     items.remove(item)
-                                    Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         )
@@ -306,12 +341,10 @@ fun PageContent(
                 }
             }
 
-            // 완료된 ToDo title and IconButton in a Row with clickable Text
             Row(
-                modifier = Modifier.run {
-                    fillMaxWidth()
-                        .padding(top = 16.dp)
-                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -319,21 +352,18 @@ fun PageContent(
                     text = "완료된 ToDo",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = if (CompletionItems.isEmpty()) Color.LightGray else Color.Black, // Change color based on item count
+                    color = if (completionItems.isEmpty()) Color.LightGray else Color.Black,
                     modifier = Modifier
                         .padding(start = 20.dp)
                         .weight(1f)
                         .clickable {
-                            if (CompletionItems.size > 1 || !isCompletedTodoExpanded) {
-                                isCompletedTodoExpanded = !isCompletedTodoExpanded // 클릭 시 확장/축소
+                            if (completionItems.size > 1 || !isCompletedTodoExpanded.value) {
+                                isCompletedTodoExpanded.value = !isCompletedTodoExpanded.value
                             }
                         }
                 )
 
-                if (CompletionItems.isNotEmpty()) {
-                    if (CompletionItems.size == 1 && !isCompletedTodoExpanded) {
-                        isCompletedTodoExpanded = true
-                    }
+                if (completionItems.isNotEmpty()) {
                     Box(
                         modifier = Modifier
                             .padding(start = 8.dp)
@@ -342,47 +372,41 @@ fun PageContent(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = CompletionItems.size.toString(),
+                            text = completionItems.size.toString(),
                             fontSize = 12.sp,
                             color = Color.White
                         )
                     }
+                } else {
+                    isCompletedTodoExpanded.value = false
                 }
-                else {
-                    isCompletedTodoExpanded = false
-                }
-
 
                 IconButton(
-                    onClick = { isTodoExpanded = !isTodoExpanded },
-                    modifier = if (items.isEmpty()) Modifier.alpha(0.5f) else Modifier.alpha(1f)
+                    onClick = { isCompletedTodoExpanded.value = !isCompletedTodoExpanded.value },
+                    modifier = if (completionItems.isEmpty()) Modifier.alpha(0.5f) else Modifier.alpha(1f)
                 ) {
                     Icon(
-                        imageVector = if (isCompletedTodoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        imageVector = if (isCompletedTodoExpanded.value) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Expand/Collapse"
                     )
                 }
             }
 
-            // 완료된 ToDo items
-            if (isCompletedTodoExpanded) {
+            if (isCompletedTodoExpanded.value) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    items(CompletionItems) { item ->
-                        ItemRow (
+                    items(completionItems) { item ->
+                        ItemRow(
                             item = item,
-                            context=context,
                             isInProgress = false,
                             onDelete = onDeleteItem,
                             onCheckedChange = { checked, item ->
                                 if (!checked) {
-                                    val currentDateTime = getCurrentDate()
-                                    items.add(ItemData(item.title, item.content, currentDateTime))
-                                    CompletionItems.remove(item)
-                                    Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+                                    addItemToInProgress(item) // Add back to in-progress list
+                                    completionItems.remove(item)
                                 }
                             }
                         )
@@ -393,12 +417,12 @@ fun PageContent(
     }
 }
 
+
 @Composable
 fun ItemRow(
     item: ItemData,
     isInProgress: Boolean,
     onCheckedChange: (Boolean, ItemData) -> Unit,
-    context: Context,
     onDelete: (ItemData) -> Unit // Add this parameter to handle deletion
 ) {
     var checked by remember { mutableStateOf(false) }
