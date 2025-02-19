@@ -1,4 +1,4 @@
-package com.example.myapplication.utils
+package com.example.todoList.utils
 
 // ButtonUtils.kt
 import android.content.Context
@@ -11,7 +11,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.example.myapplication.model.ItemData
+import com.example.todoList.model.ItemData
 
 // 상황별 버튼 색깔을 반환하는 함수
 @Composable

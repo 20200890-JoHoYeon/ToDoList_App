@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.todoList.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.R
+import com.example.todoList.R
 
 @Composable
 fun TopBar() {

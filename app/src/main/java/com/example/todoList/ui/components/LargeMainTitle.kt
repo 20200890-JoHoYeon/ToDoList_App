@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.todoList.ui.components
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text

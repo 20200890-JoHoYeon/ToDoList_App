@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.todoList.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -9,25 +9,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.R
-import com.example.myapplication.ui.components.BottomBar
-import com.example.myapplication.ui.components.LargeBlackButton
-import com.example.myapplication.ui.components.LargeMainTitle
+import com.example.todoList.R
+import com.example.todoList.ui.components.LargeBlackButton
+import com.example.todoList.ui.components.LargeMainTitle
 
 @Preview//@Preview 주석이 달린 구성 가능한 함수를 사용하여 UI를 미리보기
 @Composable
@@ -45,7 +40,7 @@ fun HomeScreen(navController: NavController) {
             .fillMaxWidth().padding(bottom = 20.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally){
-            LargeMainTitle(16,"version 1.0",FontWeight.Normal)
+            LargeMainTitle(16, stringResource(id = R.string.app_Version), FontWeight.Normal)
         }
 
     },
@@ -64,10 +59,9 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier.size(150.dp).padding(top = 20.dp)
                 )
                 Spacer(modifier = Modifier.height(100.dp))
-                LargeMainTitle(36,"TO DO LIST")
+                LargeMainTitle(36,stringResource(id = R.string.title_text))
                 Spacer(modifier = Modifier.height(20.dp))
-                LargeMainTitle(16,"소중한 시간을 효율적으로 관리하고 \n" +
-                        "프라이빗하게 기록하는 당신만의 공간")
+                LargeMainTitle(16,stringResource(id = R.string.title_message))
 
                 Spacer(modifier = Modifier.height(36.dp))
                 LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp))

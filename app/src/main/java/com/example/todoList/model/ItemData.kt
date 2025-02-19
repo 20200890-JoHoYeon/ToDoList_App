@@ -1,4 +1,4 @@
-package com.example.myapplication.model
+package com.example.todoList.model
 
 import android.os.Build
 import androidx.annotation.RequiresApi

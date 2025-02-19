@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.todoList
 
 import android.os.Build
 import android.os.Bundle
@@ -11,11 +11,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myapplication.ui.screens.HomeScreen
-import com.example.myapplication.ui.screens.Page1ListScreen
-import com.example.myapplication.ui.screens.Page2GalleryScreen
-import com.example.myapplication.ui.screens.Page3HelloScreen
+import com.example.todoList.ui.theme.MyApplicationTheme
+import com.example.todoList.ui.screens.HomeScreen
+import com.example.todoList.ui.screens.Page1ListScreen
+import com.example.todoList.ui.screens.Page2GalleryScreen
+import com.example.todoList.ui.screens.Page3HelloScreen
 
 class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose와 함께 사용할 수 있도록 제공되는 Activity의 확장 클래스
     @RequiresApi(Build.VERSION_CODES.O)

@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.todoList.ui.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions

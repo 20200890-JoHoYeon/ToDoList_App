@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.todoList.ui.components
 
 import android.content.Context
 import android.content.Intent
@@ -19,10 +19,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.MainActivity
-import com.example.myapplication.model.ItemData
-import com.example.myapplication.utils.getButtonColors
-import com.example.myapplication.utils.handleButtonClick
+import com.example.todoList.MainActivity
+import com.example.todoList.model.ItemData
+import com.example.todoList.utils.getButtonColors
+import com.example.todoList.utils.handleButtonClick
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

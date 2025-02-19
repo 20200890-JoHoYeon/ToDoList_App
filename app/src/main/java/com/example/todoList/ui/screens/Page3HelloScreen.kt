@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.todoList.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,11 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.ui.components.TopBar
+import com.example.todoList.ui.components.TopBar
 
 @Preview//@Preview 주석이 달린 구성 가능한 함수를 사용하여 UI를 미리보기
-@Composable
-fun Page2GalleryScreen() {
+@Composable//@Composable이라는 주석이 달린 일반 함수입니다. 이 함수는 UI 요소를 반환
+fun Page3HelloScreen() {
     Scaffold(
         containerColor = Color.White,
         modifier = Modifier.fillMaxSize().background(color = Color.White),
@@ -29,7 +29,7 @@ fun Page2GalleryScreen() {
 
         },
         content = { innerPadding ->
-            GalleryContent(
+            HelloContent(
                 innerPadding = innerPadding,
             )
         }
@@ -37,7 +37,7 @@ fun Page2GalleryScreen() {
 }
 
 @Composable
-fun GalleryContent(innerPadding: PaddingValues) {
+fun HelloContent(innerPadding: PaddingValues) {
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
@@ -47,7 +47,7 @@ fun GalleryContent(innerPadding: PaddingValues) {
         items((0..9).toList()) { index ->
             Card(modifier = Modifier.padding(8.dp)) {
                 Text(
-                    text = "Grid Item $index",
+                    text = "Hello World! $index",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(16.dp)
                 )

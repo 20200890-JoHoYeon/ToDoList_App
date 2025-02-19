@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.todoList.ui.screens
 
 import android.content.Context
 import android.os.Build
@@ -31,11 +31,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.model.ItemData
-import com.example.myapplication.ui.components.BottomBar
-import com.example.myapplication.ui.components.CustomTextField
-import com.example.myapplication.ui.components.TopBar
-import com.example.myapplication.utils.getCurrentDate
+import com.example.todoList.model.ItemData
+import com.example.todoList.ui.components.BottomBar
+import com.example.todoList.ui.components.CustomTextField
+import com.example.todoList.ui.components.TopBar
+import com.example.todoList.utils.getCurrentDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview

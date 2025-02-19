@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">TO DO LIST</string>
+    <string name="title_text">TO DO LIST</string>
+    <string name="title_message">소중한 시간을 효율적으로 관리하고\n프라이빗하게 기록하는 당신만의 공간</string>
+    <string name="app_Version">version 1.0</string>
 </resources>
