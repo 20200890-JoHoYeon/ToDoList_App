@@ -1,11 +1,9 @@
 package com.example.myapplication.ui.screens
 
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -27,27 +24,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.MainActivity
-import com.example.myapplication.R
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(var title: String, var content: String, var date: String)
-@RequiresApi(Build.VERSION_CODES.O)
-fun getCurrentDate(): String {
-    val currentDateTime = LocalDateTime.now() // 현재 날짜와 시간
-    val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
-    return currentDateTime.format(formatter)
-}
+import com.example.myapplication.model.ItemData
+import com.example.myapplication.ui.components.BottomBar
+import com.example.myapplication.ui.components.CustomTextField
+import com.example.myapplication.ui.components.TopBar
+import com.example.myapplication.utils.getCurrentDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
@@ -68,7 +56,6 @@ fun Page1ListScreen() {
     val isEditing = remember { mutableStateOf(false) }
     val editingItem = remember { mutableStateOf<ItemData?>(null) }
 
-
     Scaffold(
         containerColor = Color.White,
         modifier = Modifier.fillMaxSize().background(color = Color.White),
@@ -82,7 +69,6 @@ fun Page1ListScreen() {
                 isTodoExpanded = isTodoExpanded,  // 상태 전달
                 isEditing = isEditing,
                 editingItem = editingItem
-
             )
         },
         content = { innerPadding ->
@@ -102,111 +88,6 @@ fun Page1ListScreen() {
     )
 }
 
-@Composable
-fun TopBar() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = Color.White)
-            .padding(top = 50.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.placeholder_image2),
-            contentDescription = "Home Image",
-            modifier = Modifier.size(50.dp)
-        )
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun BottomBar(
-    userInput: MutableState<String>,
-    textInput: MutableState<String>,
-    items: SnapshotStateList<ItemData>,
-    context: Context,
-    isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
-    isEditing: MutableState<Boolean>,
-    editingItem: MutableState<ItemData?>
-) {
-    BottomAppBar(
-        containerColor = Color.White,
-        modifier = Modifier.background(Color.Black)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(
-                colors =
-                if(!isEditing.value) { // 수정 모드 버튼 색깔
-                    ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2A4174),
-                        contentColor = Color.White
-                    )
-                } else { // 기본 모드 버튼 색깔
-                    ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2A4174),
-                        contentColor = Color.White
-                    )
-                },
-
-                onClick = {
-                    if (isEditing.value && editingItem.value != null) {
-                        if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-                            val item = editingItem.value!!
-                            item.title = userInput.value
-                            item.content = textInput.value
-                            item.date = getCurrentDate()
-                            isEditing.value = false
-                            editingItem.value = null
-                            Toast.makeText(context, "ToDo가 수정되었습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                        if (userInput.value.isEmpty()) {
-                            Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-                        } else if (textInput.value.isEmpty()) {
-                            Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-                        }
-
-
-                    } else {
-                        if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-                            items.add(ItemData(userInput.value, textInput.value, getCurrentDate()))
-                            textInput.value = ""
-                            userInput.value = ""
-                            Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
-                        } else if (userInput.value.isEmpty()) {
-                            Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-                        } else if (textInput.value.isEmpty()) {
-                            Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    if (!isTodoExpanded.value) {
-                        isTodoExpanded.value = true
-                    }
-                }
-            ) {
-                Text(text = if (isEditing.value) "Edit Complete" else "Add Item")
-            }
-
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                onClick = {
-                    context.startActivity(Intent(context, MainActivity::class.java))
-                }
-            ) {
-                Text(text = "Go Home")
-            }
-        }
-    }
-}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -223,23 +104,22 @@ fun PageContent(
     editingItem: MutableState<ItemData?>
 ) {
 
-    // Function to add item to completionItems and manage the expanded state
     val addItemToCompleted = { item: ItemData ->
         completionItems.add(ItemData(item.title, item.content, getCurrentDate()))
         Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
 
-        // Ensure the completed ToDo section is expanded if necessary
+
         if (!isCompletedTodoExpanded.value) {
             isCompletedTodoExpanded.value = true
         }
     }
 
-    // Function to add item to items (in-progress list) and manage the expanded state
+
     val addItemToInProgress = { item: ItemData ->
         items.add(ItemData(item.title, item.content, getCurrentDate()))
         Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
 
-        // Ensure the in-progress ToDo section is expanded if necessary
+
         if (!isTodoExpanded.value) {
             isTodoExpanded.value = true
         }
@@ -256,49 +136,22 @@ fun PageContent(
             userInput.value = editingItem.value?.title ?: ""
             textInput.value = editingItem.value?.content ?: ""
         }
-        TextField(
-            value = userInput.value,
-            onValueChange = {
-                // 텍스트 길이가 최대 길이보다 작으면 업데이트
-                if (it.length <= 10) {
-                    userInput.value = it
-                } else {
-                    Toast.makeText(context, "최대 10자까지 입력 가능합니다.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            label = { Text("Enter Title") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done
-            ),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, top = 16.dp, end = 20.dp),
+        CustomTextField(
+            value = userInput,
+            placeholder = "제목을 입력해주세요 (최대 10자)",
+            onValueChange = { userInput.value = it },
+            label = if(isEditing.value)"Edit Title" else "Enter Title",
+            modifier = Modifier.fillMaxWidth(),
+            maxLength = 10
         )
-
-        TextField(
-            value = textInput.value,
+        CustomTextField(
+            value = textInput,
+            placeholder = "내용을 입력해주세죠 (최대 100자)",
             onValueChange = { textInput.value = it },
-            label = { Text("Enter Item") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done
-            ),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, top = 16.dp, end = 20.dp),
+            label = if(isEditing.value)"Edit Item" else "Enter Item",
+            modifier = Modifier.fillMaxWidth(),
         )
 
-
-        // Add the onDeleteItem function to remove an item from completionItems
         val onDeleteItem: (ItemData) -> Unit = { itemToDelete ->
             if(!isEditing.value){// 수정이 아닐때만
 
@@ -597,7 +450,7 @@ fun ItemRow(
                         contentColor = Color.White
                     ),
                     onClick = {
-                        onDelete(item) // Call onDelete when the delete button is clicked
+                        onDelete(item)
                     }
                 ) {
                     Icon(

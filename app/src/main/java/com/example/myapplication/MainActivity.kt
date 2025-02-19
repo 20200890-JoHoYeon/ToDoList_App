@@ -39,10 +39,6 @@ class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose
     }
 }
 
-
-
-
-
 //모킹
 @Preview(showBackground = true)
 @Composable
