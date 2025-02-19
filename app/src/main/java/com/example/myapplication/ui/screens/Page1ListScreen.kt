@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
@@ -36,12 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(val title: String, val content: String, val date: String)
+data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(var title: String, var content: String, val date: String)
 @RequiresApi(Build.VERSION_CODES.O)
 fun getCurrentDate(): String {
-    val currentDateTime = java.time.LocalDateTime.now() // 현재 날짜와 시간
+    val currentDateTime = LocalDateTime.now() // 현재 날짜와 시간
     val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
     return currentDateTime.format(formatter)
 }
@@ -50,15 +53,21 @@ fun getCurrentDate(): String {
 @Preview
 @Composable
 fun Page1ListScreen() {
+    //입력받을 필드(사용자가 입력한 제목, 사용자가 입력한 내용)
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
+    //추가된 아이템을 저장하는 리스트 (진행중인 Todo 리스트와 완료된 Todo 리스트)
     val items = remember { mutableStateListOf<ItemData>() }
     val completionItems = remember { mutableStateListOf<ItemData>() }
+    //안드로이드의 Context 객체
     val context = LocalContext.current
-
-    // 상태 변수 선언 (Page1ListScreen에서 관리)
+    //상태 변수 선언 (진행중인 Todo 리스트가 확장되어 있는지 여부, 완료된 Todo 리스트가 확장되어 있는지 여부)
     val isTodoExpanded = remember { mutableStateOf(false) }
     val isCompletedTodoExpanded = remember { mutableStateOf(false) }
+    //수정 상태 관리 변수(편집 모드인지 여부, 현재 편집 중인 아이템)
+    val isEditing = remember { mutableStateOf(false) }
+    val editingItem = remember { mutableStateOf<ItemData?>(null) }
+
 
     Scaffold(
         containerColor = Color.White,
@@ -71,6 +80,8 @@ fun Page1ListScreen() {
                 items = items,
                 context = context,
                 isTodoExpanded = isTodoExpanded,  // 상태 전달
+                isEditing = isEditing,
+                editingItem = editingItem
 
             )
         },
@@ -83,7 +94,9 @@ fun Page1ListScreen() {
                 completionItems = completionItems,
                 context = context,
                 isTodoExpanded = isTodoExpanded,  // 상태 전달
-                isCompletedTodoExpanded = isCompletedTodoExpanded  // 상태 전달
+                isCompletedTodoExpanded = isCompletedTodoExpanded,  // 상태 전달
+                isEditing = isEditing,
+                editingItem = editingItem
             )
         }
     )
@@ -115,7 +128,8 @@ fun BottomBar(
     items: SnapshotStateList<ItemData>,
     context: Context,
     isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
-
+    isEditing: MutableState<Boolean>,
+    editingItem: MutableState<ItemData?>
 ) {
     BottomAppBar(
         containerColor = Color.White,
@@ -128,29 +142,54 @@ fun BottomBar(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
+                colors =
+                if(!isEditing.value) { // 수정 모드 버튼 색깔
+                    ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2A4174),
+                        contentColor = Color.White
+                    )
+                } else { // 기본 모드 버튼 색깔
+                    ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2A4174),
+                        contentColor = Color.White
+                    )
+                },
+
                 onClick = {
-                    if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-                        // 날짜를 현재 날짜로 설정
-                        val currentDateTime = getCurrentDate()
-                        items.add(ItemData(userInput.value, textInput.value, currentDateTime))
-                        textInput.value = ""
-                        userInput.value = ""
-                    } else if (userInput.value.isEmpty()) {
-                        Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-                    } else if (textInput.value.isEmpty()) {
-                        Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+                    if (isEditing.value && editingItem.value != null) {
+                        if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
+                            val item = editingItem.value!!
+                            item.title = userInput.value
+                            item.content = textInput.value
+                            isEditing.value = false
+                            editingItem.value = null
+                            Toast.makeText(context, "ToDo가 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        if (userInput.value.isEmpty()) {
+                            Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        } else if (textInput.value.isEmpty()) {
+                            Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        }
+
+
+                    } else {
+                        if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
+                            items.add(ItemData(userInput.value, textInput.value, getCurrentDate()))
+                            textInput.value = ""
+                            userInput.value = ""
+                            Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+                        } else if (userInput.value.isEmpty()) {
+                            Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        } else if (textInput.value.isEmpty()) {
+                            Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
                     if (!isTodoExpanded.value) {
                         isTodoExpanded.value = true
                     }
                 }
             ) {
-                Text(text = "Add Item")
+                Text(text = if (isEditing.value) "Edit Complete" else "Add Item")
             }
 
             Button(
@@ -178,13 +217,14 @@ fun PageContent(
     completionItems: SnapshotStateList<ItemData>,
     context: Context,
     isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
-    isCompletedTodoExpanded: MutableState<Boolean>  // 상태 값은 MutableState로 받아야 함
+    isCompletedTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
+    isEditing: MutableState<Boolean>,
+    editingItem: MutableState<ItemData?>
 ) {
 
     // Function to add item to completionItems and manage the expanded state
     val addItemToCompleted = { item: ItemData ->
-        val completionDateTime = getCurrentDate()
-        completionItems.add(ItemData(item.title, item.content, completionDateTime))
+        completionItems.add(ItemData(item.title, item.content, getCurrentDate()))
         Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
 
         // Ensure the completed ToDo section is expanded if necessary
@@ -195,8 +235,7 @@ fun PageContent(
 
     // Function to add item to items (in-progress list) and manage the expanded state
     val addItemToInProgress = { item: ItemData ->
-        val currentDateTime = getCurrentDate()
-        items.add(ItemData(item.title, item.content, currentDateTime))
+        items.add(ItemData(item.title, item.content, getCurrentDate()))
         Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
 
         // Ensure the in-progress ToDo section is expanded if necessary
@@ -212,6 +251,10 @@ fun PageContent(
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        LaunchedEffect(editingItem.value) {
+            userInput.value = editingItem.value?.title ?: ""
+            textInput.value = editingItem.value?.content ?: ""
+        }
         TextField(
             value = userInput.value,
             onValueChange = {
@@ -256,17 +299,33 @@ fun PageContent(
 
         // Add the onDeleteItem function to remove an item from completionItems
         val onDeleteItem: (ItemData) -> Unit = { itemToDelete ->
-            if (completionItems.contains(itemToDelete)) {
-                completionItems.remove(itemToDelete)
-                Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-            } else if (items.contains(itemToDelete)) {
-                items.remove(itemToDelete)
-                Toast.makeText(context, "진행중인 ToDO 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            if(!isEditing.value){// 수정이 아닐때만
+
+                if (completionItems.contains(itemToDelete)) {
+                    completionItems.remove(itemToDelete)
+                    Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                } else if (items.contains(itemToDelete)) {
+                    items.remove(itemToDelete)
+                    Toast.makeText(context, "진행중인 ToDO 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+        }
+        fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
+            if (isInProgress) {
+                if (checked) {
+                    addItemToCompleted(item)
+                    items.remove(item)
+                }
             } else {
-                Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                if (!checked) {
+                    addItemToInProgress(item)
+                    completionItems.remove(item)
+                }
             }
         }
-
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
@@ -328,13 +387,12 @@ fun PageContent(
                     items(items) { item ->
                         ItemRow(
                             item = item,
+                            isEditing = isEditing,
+                            editingItem = editingItem,
                             isInProgress = true,
                             onDelete = onDeleteItem,
                             onCheckedChange = { checked, item ->
-                                if (checked) {
-                                    addItemToCompleted(item) // Add to completed list
-                                    items.remove(item)
-                                }
+                                handleCheckedChange(checked, item, true)
                             }
                         )
                     }
@@ -401,14 +459,14 @@ fun PageContent(
                     items(completionItems) { item ->
                         ItemRow(
                             item = item,
+                            isEditing = isEditing,
+                            editingItem = editingItem,
                             isInProgress = false,
                             onDelete = onDeleteItem,
                             onCheckedChange = { checked, item ->
-                                if (!checked) {
-                                    addItemToInProgress(item) // Add back to in-progress list
-                                    completionItems.remove(item)
-                                }
+                                handleCheckedChange(checked, item, false)
                             }
+
                         )
                     }
                 }
@@ -422,6 +480,8 @@ fun PageContent(
 fun ItemRow(
     item: ItemData,
     isInProgress: Boolean,
+    isEditing: MutableState<Boolean>,
+    editingItem: MutableState<ItemData?>,
     onCheckedChange: (Boolean, ItemData) -> Unit,
     onDelete: (ItemData) -> Unit // Add this parameter to handle deletion
 ) {
@@ -445,7 +505,7 @@ fun ItemRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Checkbox takes 1/6 of the Row width
+        if (!isEditing.value || editingItem.value != item) {
         Checkbox(
             checked = if (!isInProgress) true else checked,
             onCheckedChange = { isChecked ->
@@ -461,8 +521,8 @@ fun ItemRow(
                 uncheckedColor = Color.Gray
             )
         )
+        }
 
-        // First Column (Title and Content) takes the remaining space
         Column(
             modifier = Modifier
                 .weight(3f)  // 제목과 내용이 차지할 비율
@@ -487,11 +547,9 @@ fun ItemRow(
             )
         }
 
-        // Second Column (Date and Delete Button) takes 2/6 of the Row width
         Column(
             modifier = Modifier
-                .weight(2f)  // 2등분 차지
-                .padding(start = 16.dp),
+                .padding(start = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 년-월-일 표시
@@ -510,16 +568,44 @@ fun ItemRow(
                 fontSize = 14.sp,
                 color = Color.Black,
             )
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            )
+            {
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2A4174),
                     contentColor = Color.White
                 ),
-                onClick = {
-                    onDelete(item) // Call onDelete when the delete button is clicked
+                    onClick = {isEditing.value = true; editingItem.value = item }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp) // 아이콘 크기 고정
+                    )
                 }
-            ) {
-                Text(text = "Delete")
+
+                Spacer(modifier = Modifier.width(6.dp))  // 두 줄 사이에 여백 추가
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        onDelete(item) // Call onDelete when the delete button is clicked
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp) // 아이콘 크기 고정
+                    )
+                }
             }
         }
     }
