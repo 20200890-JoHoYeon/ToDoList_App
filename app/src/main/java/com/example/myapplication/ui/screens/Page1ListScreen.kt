@@ -41,7 +41,7 @@ import com.example.myapplication.R
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(var title: String, var content: String, val date: String)
+data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(var title: String, var content: String, var date: String)
 @RequiresApi(Build.VERSION_CODES.O)
 fun getCurrentDate(): String {
     val currentDateTime = LocalDateTime.now() // 현재 날짜와 시간
@@ -161,6 +161,7 @@ fun BottomBar(
                             val item = editingItem.value!!
                             item.title = userInput.value
                             item.content = textInput.value
+                            item.date = getCurrentDate()
                             isEditing.value = false
                             editingItem.value = null
                             Toast.makeText(context, "ToDo가 수정되었습니다.", Toast.LENGTH_SHORT).show()
