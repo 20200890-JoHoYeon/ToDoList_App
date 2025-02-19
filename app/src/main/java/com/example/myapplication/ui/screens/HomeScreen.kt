@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.ui.components.BottomBar
 import com.example.myapplication.ui.components.LargeBlackButton
 import com.example.myapplication.ui.components.LargeMainTitle
 
@@ -37,31 +39,46 @@ fun HomeScreenPreview() {
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = { Column(modifier = Modifier
+            .fillMaxWidth().padding(bottom = 20.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.placeholder_image2),
-                contentDescription = "Home Image",
-                modifier = Modifier.size(150.dp)
-            )
-            Spacer(modifier = Modifier.height(100.dp))
-            LargeMainTitle(32,"TO-DO LIST")
-            LargeMainTitle(16,"소중한 시간을 효율적으로 관리하고 \n" +
-                    "프라이빗하게 기록하는 당신만의 공간")
-
-            Spacer(modifier = Modifier.height(26.dp))
-            LargeBlackButton(navController, "LIST", "page1", Modifier.width(250.dp))
-            Spacer(modifier = Modifier.height(8.dp))
-            LargeBlackButton(navController, "Gallery", "page2", Modifier.width(250.dp))
-            Spacer(modifier = Modifier.height(8.dp))
-            LargeBlackButton(navController, "Hello", "page3", Modifier.width(250.dp))
+            horizontalAlignment = Alignment.CenterHorizontally){
+            LargeMainTitle(16,"version 1.0",FontWeight.Normal)
         }
-    }
+
+    },
+        content = { innerPadding ->
+
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.placeholder_image2),
+                    contentDescription = "Home Image",
+                    modifier = Modifier.size(150.dp).padding(top = 20.dp)
+                )
+                Spacer(modifier = Modifier.height(100.dp))
+                LargeMainTitle(36,"TO DO LIST")
+                Spacer(modifier = Modifier.height(20.dp))
+                LargeMainTitle(16,"소중한 시간을 효율적으로 관리하고 \n" +
+                        "프라이빗하게 기록하는 당신만의 공간")
+
+                Spacer(modifier = Modifier.height(36.dp))
+                LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
+//            Spacer(modifier = Modifier.height(8.dp))
+//            LargeBlackButton(navController, "Gallery", "page2", Modifier.width(250.dp))
+//            Spacer(modifier = Modifier.height(8.dp))
+//            LargeBlackButton(navController, "Hello", "page3", Modifier.width(250.dp))
+
+
+            }
+        }
+    )
 }
 

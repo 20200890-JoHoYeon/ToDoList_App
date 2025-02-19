@@ -28,7 +28,7 @@ fun LargeBlackButton(
         ),
         onClick = { navController.navigate(destination) },
         shape = RoundedCornerShape(12.dp),
-        modifier = modifier.width(250.dp)
+        modifier = modifier
     ) {
         Text(buttonText)
     }

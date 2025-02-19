@@ -10,13 +10,14 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun LargeMainTitle(
     fontSize: Int,
-    text: String
+    text: String,
+    fontWeight: FontWeight = FontWeight.Bold // Default value set to Normal
 ) {
     Text(
-        text = text, // 이제 text 매개변수를 사용합니다.
+        text = text, // Using the passed text
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.headlineMedium,
-        fontSize = fontSize.sp, // 글씨 크기 키우기
-        fontWeight = FontWeight.Bold // 글씨 굵게
+        fontSize = fontSize.sp,
+        fontWeight = fontWeight
     )
 }
