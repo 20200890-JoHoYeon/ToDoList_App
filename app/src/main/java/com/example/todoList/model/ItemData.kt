@@ -1,6 +1,12 @@
 package com.example.todoList.model
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-data class ItemData @RequiresApi(Build.VERSION_CODES.O) constructor(var title: String, var content: String, var date: String)
+@Entity(tableName = "item_table")
+data class ItemData(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0, // 자동 증가 ID
+    var title: String,
+    var content: String,
+    var date: Long//String
+)

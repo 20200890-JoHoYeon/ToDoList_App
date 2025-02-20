@@ -28,9 +28,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import com.example.todoList.model.ItemData
 import com.example.todoList.ui.components.BottomBar
 import com.example.todoList.ui.components.CustomTextField
@@ -38,9 +38,11 @@ import com.example.todoList.ui.components.TopBar
 import com.example.todoList.utils.getCurrentDate
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
+
 @Composable
 fun Page1ListScreen() {
+
+
     //입력받을 필드(사용자가 입력한 제목, 사용자가 입력한 내용)
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
@@ -55,6 +57,8 @@ fun Page1ListScreen() {
     //수정 상태 관리 변수(편집 모드인지 여부, 현재 편집 중인 아이템)
     val isEditing = remember { mutableStateOf(false) }
     val editingItem = remember { mutableStateOf<ItemData?>(null) }
+
+
 
     Scaffold(
         containerColor = Color.White,
