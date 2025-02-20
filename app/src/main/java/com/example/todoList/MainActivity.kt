@@ -18,6 +18,8 @@ import com.example.todoList.ui.screens.Page2GalleryScreen
 import com.example.todoList.ui.screens.Page3HelloScreen
 
 class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose와 함께 사용할 수 있도록 제공되는 Activity의 확장 클래스
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {//onCreate는 액티비티가 처음 생성될 때 호출되는 메서드 super.onCreate(savedInstanceState)를 호출
         super.onCreate(savedInstanceState)//부모 클래스의 기본 동작을 수행
