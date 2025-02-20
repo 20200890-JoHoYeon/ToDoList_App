@@ -1,0 +1,146 @@
+[33mcommit 5f2dfd7e52b2545abc53a56db472f56403517c95[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Thu Feb 20 14:23:57 2025 +0900
+
+    [생성] Room 로컬 디비 전환을 위한 플러그인 설치와 폴더구조및 파일 확장
+
+[33mcommit 6a78a08fe94b2d8b809a02080b2c0b4053632e1d[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Thu Feb 20 10:45:12 2025 +0900
+
+    [완료] appIcon 설정
+
+[33mcommit 771661e0d3a46ba2d5c51eb2f1e520218be74bf8[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Wed Feb 19 18:01:08 2025 +0900
+
+    [수정] appName 변경 todoList
+
+[33mcommit 3a48a597a7687a16050b31ff7120bc1ecd25bc95[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Wed Feb 19 16:19:35 2025 +0900
+
+    [수정] LargeMainTitle 수정, UI 수정 작업
+
+[33mcommit 21d4bd6465d26ecff04e993101f576bf19bcb0e6[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Wed Feb 19 15:11:47 2025 +0900
+
+    [수정] ToDo 페이지 UI Comonents 분리 작업
+
+[33mcommit ac360c1ef0a5308d9e01cf07e8f2b12dbf414eb3[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Wed Feb 19 13:52:51 2025 +0900
+
+    [수정] Todo Item 수정 기능 날짜 업데이트,
+
+[33mcommit da910400af70a5e54d8542b7e354e471a6945525[m
+Merge: 3c9be1c 272dd73
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Wed Feb 19 13:49:55 2025 +0900
+
+    Merge remote-tracking branch 'origin/master'
+
+[33mcommit 3c9be1c65dffeada866db680870329ccab74d824[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Wed Feb 19 13:49:26 2025 +0900
+
+    [완료] Todo Item 수정 기능 추가, 상황별 토스트 및 UI 개선
+
+[33mcommit 272dd7356736622a011df0657b05fcf38ca22b44[m
+Author: HoYeon Jo <akftjd100@gmail.com>
+Date:   Tue Feb 18 17:41:48 2025 +0900
+
+    Update README.md
+
+[33mcommit aacf488b9e4412ef9a3005ef09ef7c27f6c9e858[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Tue Feb 18 17:29:21 2025 +0900
+
+    [완료] isTodoExpanded, isCompletedTodoExpanded를 전역 변수로 수정하여 bottomBar에서 Add Item시에도 리스트별 아코디언 작동
+
+[33mcommit 905001b3bdf686746e64bae2f42cb1030960b021[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Tue Feb 18 16:27:53 2025 +0900
+
+    [수정] 리스트별 아이템 생성 시 자동 아코디언 기능 상황별 코드 수정
+
+[33mcommit 310f495d106c7e187cf01cb2a050891f4e04a085[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Tue Feb 18 14:28:33 2025 +0900
+
+    [수정] TextFieldDefaults.textFieldColors() Deprecated(사용 중단 예정) -> TextFieldDefaults.colors() 수정
+
+[33mcommit c3679fefc685dcb122e773b26547f65a22004fdc[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Tue Feb 18 14:23:05 2025 +0900
+
+    [생성] 상황별 토스트 및 UI 개선, 리스트별 삭제 버튼 생성, 리스트별 아이템 생성 시 자동 아코디언 기능
+
+[33mcommit 9fc26ad120af6a9f31c0179432f40d8a4f2e4e8f[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Tue Feb 18 14:22:44 2025 +0900
+
+    [생성] 상황별 토스트 및 UI 개선, 리스트별 삭제 버튼 생성, 리스트별 아이템 생성 시 자동 아코디언 기능
+
+[33mcommit 71f37f5598ac365e440ed661454f1f184895de91[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Tue Feb 18 11:07:58 2025 +0900
+
+    [생성] 상황별 토스트 및 UI 개선,
+    [오류] 리스트 아이템 스와이퍼 삭제 오류
+
+[33mcommit f1e1a8ddf85b6faeba6da9b099989a47edc7f64a[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 17:16:00 2025 +0900
+
+    [오류] 진행중인 toDo 완료 후 체크박스 checked 값 초기화 실패 오류
+
+[33mcommit 9e0b53e8d708d5cd3f9c9e30d4cd9c54c341a08d[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 17:10:22 2025 +0900
+
+    [수정] 리스트 스크린 디자인 수정, 진행중인 ToDo와 완료된 ToDo별 리스트, 체크박스, 날짜, 리스트별 재이동 기능구현, 타이틀의 아코디언 기능 추가와 아이템 개수 표기, 상황별 디자인 처리
+
+[33mcommit bd54ef3f4d4eb5ec8f219e967e39c99ae0bdfdda[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 15:09:51 2025 +0900
+
+    [수정] 리스트 스크린 디자인 수정, 체크 삭제 기능 구현
+
+[33mcommit 223bda98dd28dd5d34392de31a2c4857f7895427[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 15:08:29 2025 +0900
+
+    [수정] 리스트 스크린 디자인 수정, 체크 삭제 기능 구현
+
+[33mcommit 67fab04bd79ca247ea75e37272f986133030d498[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 09:51:46 2025 +0900
+
+    [수정] .gitattributes Languages Kotlin 코드 수정
+
+[33mcommit a9d3531c720696b5f878ed78ba780cdc4e4fbf8e[m
+Merge: c638edc 110e6ea
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 09:19:34 2025 +0900
+
+    Merge remote-tracking branch 'origin/master'
+
+[33mcommit c638edc53be2c808752519bfb2bd8ccd9b7e3076[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Mon Feb 17 09:18:18 2025 +0900
+
+    [수정] 클래스 기반 Activity 방식 -> Composable 함수 방식 변경
+
+[33mcommit 110e6eade4cd23c6b640eb6c3122d76e3c436745[m
+Author: HoYeon Jo <akftjd100@gmail.com>
+Date:   Mon Feb 17 09:14:01 2025 +0900
+
+    Create README.md
+
+[33mcommit ddf81da68e9cea1c2f911155d67d53e40f3fee4f[m
+Author: DESKTOP-3VDE5ID\USER <akftjd100@gmail.com>
+Date:   Fri Feb 14 17:00:09 2025 +0900
+
+    start
