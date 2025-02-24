@@ -1,6 +1,8 @@
 package com.example.todoList.ui.screens
 
+import android.app.Application
 import android.content.Context
+import androidx.lifecycle.viewmodel.compose.viewModel
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -32,6 +34,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todoList.model.ItemData
+import com.example.todoList.model.ItemViewModel
+import com.example.todoList.model.ItemViewModelFactory
 import com.example.todoList.ui.components.BottomBar
 import com.example.todoList.ui.components.CustomTextField
 import com.example.todoList.ui.components.TopBar
@@ -41,14 +45,26 @@ import com.example.todoList.utils.getCurrentDate
 @Preview
 @Composable
 fun Page1ListScreen() {
+    //기본설정
+    //안드로이드의 Context 객체
+    val context = LocalContext.current
+    val appContext = context.applicationContext as Application
+    val viewModelFactory = ItemViewModelFactory(appContext)
+    val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
+
     //입력받을 필드(사용자가 입력한 제목, 사용자가 입력한 내용)
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
+
     //추가된 아이템을 저장하는 리스트 (진행중인 Todo 리스트와 완료된 Todo 리스트)
+    // 미완료 항목
+    //val dbItems by viewModel.items.collectAsState(initial = emptyList())
     val items = remember { mutableStateListOf<ItemData>() }
+    // 완료된 항목
+    //val dbCompletionItems by viewModel.completedItems.collectAsState(initial = emptyList())
     val completionItems = remember { mutableStateListOf<ItemData>() }
-    //안드로이드의 Context 객체
-    val context = LocalContext.current
+
+
     //상태 변수 선언 (진행중인 Todo 리스트가 확장되어 있는지 여부, 완료된 Todo 리스트가 확장되어 있는지 여부)
     val isTodoExpanded = remember { mutableStateOf(false) }
     val isCompletedTodoExpanded = remember { mutableStateOf(false) }

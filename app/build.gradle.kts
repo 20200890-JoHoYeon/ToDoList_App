@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.ksp) // KSP 플러그인 적용 (alias 사용)
 }
 
 android {
@@ -40,9 +41,12 @@ android {
 }
 
 dependencies {
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.24.13-rc") // 최신 버전 확인 필요
-    implementation ("androidx.compose.foundation:foundation:1.3.0")
-    implementation ("androidx.compose.material3:material3:1.0.0")
+    implementation (libs.androidx.foundation)
+    implementation (libs.material3)
+    implementation(libs.kotlin.stdlib.jdk8)
+    ksp(libs.symbol.processing.api)
+    ksp(libs.androidx.room.common)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -52,6 +56,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.room.common)
+    implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
