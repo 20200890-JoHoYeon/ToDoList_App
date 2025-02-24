@@ -13,7 +13,9 @@ data class Item(
     @ColumnInfo(name = "content")
     val content: String,
     @ColumnInfo(name = "date")
-    val date: String
+    val date: String,
+    @ColumnInfo(name = "isCompleted")
+    val isCompleted: Boolean = false // 완료 여부 필드 추가
 )
 
 

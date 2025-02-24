@@ -2,9 +2,8 @@ package com.example.todoList.model
 
 import androidx.lifecycle.LiveData
 
-class ItemRepository(private val itemDao: ItemDao, private val completedItemDao: CompletedItemDao) {
+class ItemRepository(private val itemDao: ItemDao) {
     val allItems: LiveData<List<Item>> = itemDao.getAllItems()
-    val allCompletedItems: LiveData<List<CompletedItem>> = completedItemDao.getAllCompletedItems()
 
     suspend fun insertItem(item: Item) {
         itemDao.insert(item)
@@ -16,17 +15,5 @@ class ItemRepository(private val itemDao: ItemDao, private val completedItemDao:
 
     suspend fun updateItem(item: Item) {
         itemDao.update(item)
-    }
-
-    suspend fun insertCompletedItem(completedItem: CompletedItem) {
-        completedItemDao.insert(completedItem)
-    }
-
-    suspend fun deleteCompletedItem(completedItem: CompletedItem) {
-        completedItemDao.delete(completedItem)
-    }
-
-    suspend fun updateCompletedItem(completedItem: CompletedItem) {
-        completedItemDao.update(completedItem)
     }
 }

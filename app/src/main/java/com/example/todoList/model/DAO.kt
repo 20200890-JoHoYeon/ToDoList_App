@@ -21,18 +21,3 @@ interface ItemDao {
     @Update
     suspend fun update(item: Item)
 }
-
-@Dao
-interface CompletedItemDao {
-    @Query("SELECT * FROM completedItem")
-    fun getAllCompletedItems(): LiveData<List<CompletedItem>>
-
-    @Insert
-    suspend fun insert(item: CompletedItem)
-
-    @Delete
-    suspend fun delete(item: CompletedItem)
-
-    @Update
-    suspend fun update(completedItem: CompletedItem)
-}
