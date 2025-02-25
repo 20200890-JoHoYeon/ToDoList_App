@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.todoList"
+    namespace = "com.hottak.todoList"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.todoList"
+        applicationId = "com.hottak.todoList"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
