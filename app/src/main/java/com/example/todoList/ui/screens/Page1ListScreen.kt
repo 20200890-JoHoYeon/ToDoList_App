@@ -44,7 +44,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -207,16 +206,21 @@ fun PageContent(
         }
         fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
             if (isInProgress) {
-                val updatedItem = item.copy(isCompleted = checked).toItem()
-                Log.d("ItemUpdate", "Updated items: $updatedItem")
-                viewModel.updateItem(updatedItem)
-                if(checked) addItemToCompleted(item)
-                items.remove(item)
-            }else {
-                val updatedItem = item.copy(isCompleted = checked).toItem()
-                Log.d("ItemUpdate", "Updated items: $updatedItem")
-                viewModel.updateItem(updatedItem)
-                completionItems.remove(item)
+                if (!isEditing.value) {
+                    val updatedItem = item.copy(isCompleted = checked).toItem()
+                    Log.d("ItemUpdate", "Updated items: $updatedItem")
+                    viewModel.updateItem(updatedItem)
+                    if (checked) addItemToCompleted(item)
+                    items.remove(item)
+                }else {
+                    Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                if (!isEditing.value) {
+                    val updatedItem = item.copy(isCompleted = checked).toItem()
+                    viewModel.updateItem(updatedItem)
+                    completionItems.remove(item)
+                }else Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
         Column(modifier = Modifier.fillMaxSize()) {
