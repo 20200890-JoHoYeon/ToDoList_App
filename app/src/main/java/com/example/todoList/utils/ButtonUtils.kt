@@ -3,6 +3,7 @@ package com.example.todoList.utils
 // ButtonUtils.kt
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
@@ -12,6 +13,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.todoList.model.ItemData
+import com.example.todoList.model.ItemViewModel
+import com.example.todoList.model.toItem
 
 // 상황별 버튼 색깔을 반환하는 함수
 @Composable
@@ -37,16 +40,20 @@ fun handleButtonClick(
     items: SnapshotStateList<ItemData>,
     context: Context,
     isTodoExpanded: MutableState<Boolean>,
-    editingItem: MutableState<ItemData?>
+    editingItem: MutableState<ItemData?>,
+    viewModel: ItemViewModel
 ) {
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
+
             val item = editingItem.value!!
             item.title = userInput.value
             item.content = textInput.value
             item.date = getCurrentDate()
+            viewModel.updateItem(item.toItem())
             isEditing.value = false
             editingItem.value = null
+            Log.d("test", "Updated items: $item")
             Toast.makeText(context, "ToDo가 수정되었습니다.", Toast.LENGTH_SHORT).show()
         }
         if (userInput.value.isEmpty()) {
@@ -56,7 +63,8 @@ fun handleButtonClick(
         }
     } else {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-            items.add(ItemData(userInput.value, textInput.value, getCurrentDate()))
+            viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = getCurrentDate(), isCompleted = false).toItem())
+            Log.d("test", "insert items")
             textInput.value = ""
             userInput.value = ""
             Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()

@@ -15,9 +15,15 @@ interface ItemDao {
     @Delete
     suspend fun delete(item: Item)
 
-    @Query("SELECT * FROM items")
-    fun getAllItems(): LiveData<List<Item>>
-
     @Update
     suspend fun update(item: Item)
+
+    @Query("SELECT * FROM items WHERE isCompleted = 0") // 진행 중인 항목만 조회
+    fun getAllItems(): LiveData<List<Item>>
+
+    @Query("SELECT * FROM items WHERE isCompleted = 1") // 완료된 항목만 조회
+    fun getAllCompletedItems(): LiveData<List<Item>>
+
+    @Query("SELECT * FROM items") // 모든 항목 조회
+    fun getAll(): LiveData<List<Item>>
 }

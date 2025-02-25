@@ -2,13 +2,24 @@ package com.example.todoList.ui.screens
 
 import android.app.Application
 import android.content.Context
-import androidx.lifecycle.viewmodel.compose.viewModel
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -18,9 +29,24 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,56 +59,59 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todoList.model.ItemData
 import com.example.todoList.model.ItemViewModel
 import com.example.todoList.model.ItemViewModelFactory
+import com.example.todoList.model.toItem
 import com.example.todoList.ui.components.BottomBar
 import com.example.todoList.ui.components.CustomTextField
 import com.example.todoList.ui.components.TopBar
-import com.example.todoList.utils.getCurrentDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun Page1ListScreen() {
-    //기본설정
-    //안드로이드의 Context 객체
+    // 기본 설정
     val context = LocalContext.current
     val appContext = context.applicationContext as Application
     val viewModelFactory = ItemViewModelFactory(appContext)
     val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
 
-    //입력받을 필드(사용자가 입력한 제목, 사용자가 입력한 내용)
+    // 입력 필드
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
 
-    //추가된 아이템을 저장하는 리스트 (진행중인 Todo 리스트와 완료된 Todo 리스트)
-    // 미완료 항목
-    //val dbItems by viewModel.items.collectAsState(initial = emptyList())
-    val items = remember { mutableStateListOf<ItemData>() }
+    // 데이터베이스에서 가져온 모든 아이템 (ItemData로 변환)
+    val allItems: List<ItemData> by viewModel.allItems.observeAsState(emptyList())
+    // 진행 중인 항목
+    val items = allItems.filter { !it.isCompleted }.toMutableStateList()
     // 완료된 항목
-    //val dbCompletionItems by viewModel.completedItems.collectAsState(initial = emptyList())
-    val completionItems = remember { mutableStateListOf<ItemData>() }
-
-
-    //상태 변수 선언 (진행중인 Todo 리스트가 확장되어 있는지 여부, 완료된 Todo 리스트가 확장되어 있는지 여부)
+    val completionItems = allItems.filter { it.isCompleted }.toMutableStateList()
+    Log.d("test", "투두 페이지 진입")
+    Log.d("test", "allItems 데이터베이스에서 가져온 아이템 아이템데이터 타입으로 변환: $allItems")
+    Log.d("test", "진행중인 items 항목:${items},  ${items.toList()}")
+    Log.d("test", "완료된 items 항목:${completionItems},  ${completionItems.toList()}")
+    // 상태 변수
     val isTodoExpanded = remember { mutableStateOf(false) }
     val isCompletedTodoExpanded = remember { mutableStateOf(false) }
-    //수정 상태 관리 변수(편집 모드인지 여부, 현재 편집 중인 아이템)
     val isEditing = remember { mutableStateOf(false) }
     val editingItem = remember { mutableStateOf<ItemData?>(null) }
 
     Scaffold(
         containerColor = Color.White,
-        modifier = Modifier.fillMaxSize().background(color = Color.White),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.White),
         topBar = { TopBar() },
         bottomBar = {
             BottomBar(
+                viewModel = viewModel,
                 userInput = userInput,
                 textInput = textInput,
                 items = items,
                 context = context,
-                isTodoExpanded = isTodoExpanded,  // 상태 전달
+                isTodoExpanded = isTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem
             )
@@ -90,13 +119,14 @@ fun Page1ListScreen() {
         content = { innerPadding ->
             PageContent(
                 innerPadding = innerPadding,
+                viewModel = viewModel,
                 userInput = userInput,
                 textInput = textInput,
                 items = items,
                 completionItems = completionItems,
                 context = context,
-                isTodoExpanded = isTodoExpanded,  // 상태 전달
-                isCompletedTodoExpanded = isCompletedTodoExpanded,  // 상태 전달
+                isTodoExpanded = isTodoExpanded,
+                isCompletedTodoExpanded = isCompletedTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem
             )
@@ -104,37 +134,39 @@ fun Page1ListScreen() {
     )
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PageContent(
     innerPadding: PaddingValues,
+    viewModel: ItemViewModel,
     userInput: MutableState<String>,
     textInput: MutableState<String>,
     items: SnapshotStateList<ItemData>,
     completionItems: SnapshotStateList<ItemData>,
     context: Context,
-    isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
-    isCompletedTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
+    isTodoExpanded: MutableState<Boolean>,
+    isCompletedTodoExpanded: MutableState<Boolean>,
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>
 ) {
-
-    val addItemToCompleted = { item: ItemData ->
-        completionItems.add(ItemData(item.title, item.content, getCurrentDate()))
+    val addItemToCompleted = { itemData: ItemData ->
+        val item = itemData.copy(isCompleted = true).toItem()
+        viewModel.updateItem(item)
+        val updatedItems = viewModel.allItems.value // LiveData의 값을 가져옴
+        Log.d("ItemUpdate", "Updated items: $updatedItems")
         Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
-
 
         if (!isCompletedTodoExpanded.value) {
             isCompletedTodoExpanded.value = true
         }
     }
 
-
-    val addItemToInProgress = { item: ItemData ->
-        items.add(ItemData(item.title, item.content, getCurrentDate()))
+    val addItemToInProgress = { itemData: ItemData ->
+        val item = itemData.copy(isCompleted = false).toItem()
+        viewModel.updateItem(item)
+        val updatedItems = viewModel.allItems.value // LiveData의 값을 가져옴
+        Log.d("ItemUpdate", "Updated items: $updatedItems")
         Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
-
 
         if (!isTodoExpanded.value) {
             isTodoExpanded.value = true
@@ -156,7 +188,7 @@ fun PageContent(
             value = userInput,
             placeholder = "제목을 입력해주세요 (최대 10자)",
             onValueChange = { userInput.value = it },
-            label = if(isEditing.value)"Edit Title" else "Enter Title",
+            label = if (isEditing.value) "Edit Title" else "Enter Title",
             modifier = Modifier.fillMaxWidth(),
             maxLength = 10
         )
@@ -164,22 +196,24 @@ fun PageContent(
             value = textInput,
             placeholder = "내용을 입력해주세죠 (최대 100자)",
             onValueChange = { textInput.value = it },
-            label = if(isEditing.value)"Edit Item" else "Enter Item",
+            label = if (isEditing.value) "Edit Item" else "Enter Item",
             modifier = Modifier.fillMaxWidth(),
         )
 
         val onDeleteItem: (ItemData) -> Unit = { itemToDelete ->
-            if(!isEditing.value){// 수정이 아닐때만
-
-                if (completionItems.contains(itemToDelete)) {
-                    completionItems.remove(itemToDelete)
-                    Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                } else if (items.contains(itemToDelete)) {
-                    items.remove(itemToDelete)
+            if (!isEditing.value) {
+                val item = itemToDelete.toItem()
+                viewModel.deleteItem(item)
+                 if (items.contains(itemToDelete)) {
                     Toast.makeText(context, "진행중인 ToDO 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                } else {
+                 }else if (completionItems.contains(itemToDelete)) {
+                    Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+
+                 }else{
                     Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
                 }
+
+
             }
             Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
         }
@@ -189,7 +223,7 @@ fun PageContent(
                     addItemToCompleted(item)
                     items.remove(item)
                 }
-            } else {
+                }else {
                 if (!checked) {
                     addItemToInProgress(item)
                     completionItems.remove(item)
@@ -348,6 +382,7 @@ fun PageContent(
 
 @Composable
 fun ItemRow(
+
     item: ItemData,
     isInProgress: Boolean,
     isEditing: MutableState<Boolean>,
@@ -356,7 +391,7 @@ fun ItemRow(
     onDelete: (ItemData) -> Unit // Add this parameter to handle deletion
 ) {
     var checked by remember { mutableStateOf(false) }
-
+    val viewModel: ItemViewModel = viewModel(factory = ItemViewModelFactory(LocalContext.current.applicationContext as Application))
     // 진행 중이 아닌 경우 배경 색상 설정
     val rowBackgroundColor = if (isInProgress) {
         Color.LightGray.copy(alpha = 0.3f) // 진행 중일 때는 연한 회색 배경
@@ -381,8 +416,9 @@ fun ItemRow(
             onCheckedChange = { isChecked ->
                 checked = isChecked
                 onCheckedChange(isChecked, item) // Handle checked change
+                //checked = isChecked
                 checked = false
-            },
+           },
             modifier = Modifier
                 .size(50.dp)
                 .weight(0.5f),  // 1등분 차지
@@ -450,6 +486,12 @@ fun ItemRow(
                 ),
                     onClick = {isEditing.value = true; editingItem.value = item }
                 ) {
+                    LaunchedEffect(isEditing.value) {
+                        if(!isEditing.value){ //수정완료시
+                            //viewModel.updateItem(editingItem.value!!.copy(title=userInput.value,content = textInput.value))
+                        }
+                    }
+
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",

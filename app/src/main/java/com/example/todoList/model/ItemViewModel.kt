@@ -8,12 +8,15 @@ import kotlinx.coroutines.launch
 
 class ItemViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ItemRepository
-    private val allItems: LiveData<List<Item>>
+
+    val allItems: LiveData<List<ItemData>>
+    val allCompletedItems: LiveData<List<ItemData>>
 
     init {
         val itemDao = AppDatabase.getDatabase(application).itemDao()
         repository = ItemRepository(itemDao)
         allItems = repository.allItems
+        allCompletedItems = repository.allCompletedItems
     }
 
     fun insertItem(item: Item) {
@@ -33,5 +36,4 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             repository.updateItem(item)
         }
     }
-
 }

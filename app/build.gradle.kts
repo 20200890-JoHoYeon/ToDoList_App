@@ -44,6 +44,7 @@ dependencies {
     implementation (libs.androidx.foundation)
     implementation (libs.material3)
     implementation(libs.kotlin.stdlib.jdk8)
+    implementation(libs.androidx.runtime.livedata)
     ksp(libs.symbol.processing.api)
     ksp(libs.androidx.room.common)
     ksp(libs.androidx.room.compiler)

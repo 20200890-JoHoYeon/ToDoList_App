@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.todoList.MainActivity
 import com.example.todoList.model.ItemData
+import com.example.todoList.model.ItemViewModel
 import com.example.todoList.utils.getButtonColors
 import com.example.todoList.utils.handleButtonClick
 
@@ -33,7 +34,8 @@ fun BottomBar(
     context: Context,
     isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
     isEditing: MutableState<Boolean>,
-    editingItem: MutableState<ItemData?>
+    editingItem: MutableState<ItemData?>,
+    viewModel: ItemViewModel
 
 ) {
     BottomAppBar(
@@ -50,6 +52,7 @@ fun BottomBar(
                 colors = getButtonColors(isEditing.value),
                 onClick = {
                     handleButtonClick(
+                        viewModel= viewModel,
                         isEditing = isEditing,
                         userInput = userInput,
                         textInput = textInput,

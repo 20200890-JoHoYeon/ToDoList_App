@@ -8,14 +8,30 @@ import androidx.room.PrimaryKey
 data class Item(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    @ColumnInfo(name = "title") val
-    title: String,
-    @ColumnInfo(name = "content")
-    val content: String,
-    @ColumnInfo(name = "date")
-    val date: String,
-    @ColumnInfo(name = "isCompleted")
-    val isCompleted: Boolean = false // 완료 여부 필드 추가
+    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "content") val content: String,
+    @ColumnInfo(name = "date") val date: String,
+    @ColumnInfo(name = "isCompleted") val isCompleted: Boolean = false
 )
 
+// Item을 ItemData로 변환하는 확장 함수
+fun Item.toItemData(): ItemData {
+    return ItemData(
+        id = id,
+        title = title,
+        content = content,
+        date = date,
+        isCompleted = isCompleted
+    )
+}
 
+// ItemData를 Item으로 변환하는 확장 함수
+fun ItemData.toItem(): Item {
+    return Item(
+        id = id,
+        title = title,
+        content = content,
+        date = date,
+        isCompleted = isCompleted
+    )
+}
