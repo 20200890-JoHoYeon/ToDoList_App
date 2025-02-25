@@ -10,6 +10,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -30,8 +31,10 @@ fun CustomTextField(
             }
         },
         label = { Text(label) },
+        singleLine = false, // 여러 줄로 입력 허용
         placeholder = { Text(placeholder) },
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White,

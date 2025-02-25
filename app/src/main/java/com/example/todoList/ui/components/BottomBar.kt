@@ -63,17 +63,21 @@ fun BottomBar(
             ) {
                 Text(text = if (isEditing.value) "Edit Complete" else "Add Item")
             }
+            if (isEditing.value) {
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    onClick = {
+                        isEditing.value = !isEditing.value
+                        userInput.value=""
+                        textInput.value=""
 
-            Button(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                onClick = {
-                    context.startActivity(Intent(context, MainActivity::class.java))
+                    }
+                ) {
+                    Text(text = "cancel")
                 }
-            ) {
-                Text(text = "Go Home")
             }
         }
     }
