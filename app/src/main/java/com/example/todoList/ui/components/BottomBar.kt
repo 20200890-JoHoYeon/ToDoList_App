@@ -30,7 +30,6 @@ import com.example.todoList.utils.handleButtonClick
 fun BottomBar(
     userInput: MutableState<String>,
     textInput: MutableState<String>,
-    items: SnapshotStateList<ItemData>,
     context: Context,
     isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
     isEditing: MutableState<Boolean>,
@@ -56,7 +55,6 @@ fun BottomBar(
                         isEditing = isEditing,
                         userInput = userInput,
                         textInput = textInput,
-                        items = items,
                         context = context,
                         isTodoExpanded = isTodoExpanded,
                         editingItem = editingItem

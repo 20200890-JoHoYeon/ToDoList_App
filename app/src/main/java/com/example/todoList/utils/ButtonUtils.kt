@@ -37,7 +37,6 @@ fun handleButtonClick(
     isEditing: MutableState<Boolean>,
     userInput: MutableState<String>,
     textInput: MutableState<String>,
-    items: SnapshotStateList<ItemData>,
     context: Context,
     isTodoExpanded: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,

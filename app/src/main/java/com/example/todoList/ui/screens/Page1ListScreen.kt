@@ -84,10 +84,11 @@ fun Page1ListScreen() {
 
     // 데이터베이스에서 가져온 모든 아이템 (ItemData로 변환)
     val allItems: List<ItemData> by viewModel.allItems.observeAsState(emptyList())
+    val allCompletedItems: List<ItemData> by viewModel.allCompletedItems.observeAsState(emptyList())
     // 진행 중인 항목
-    val items = allItems.filter { !it.isCompleted }.toMutableStateList()
+    val items = allItems.toMutableStateList()
     // 완료된 항목
-    val completionItems = allItems.filter { it.isCompleted }.toMutableStateList()
+    val completionItems = allCompletedItems.toMutableStateList()
     Log.d("test", "투두 페이지 진입")
     Log.d("test", "allItems 데이터베이스에서 가져온 아이템 아이템데이터 타입으로 변환: $allItems")
     Log.d("test", "진행중인 items 항목:${items},  ${items.toList()}")
@@ -109,7 +110,6 @@ fun Page1ListScreen() {
                 viewModel = viewModel,
                 userInput = userInput,
                 textInput = textInput,
-                items = items,
                 context = context,
                 isTodoExpanded = isTodoExpanded,
                 isEditing = isEditing,
@@ -161,18 +161,6 @@ fun PageContent(
         }
     }
 
-    val addItemToInProgress = { itemData: ItemData ->
-        val item = itemData.copy(isCompleted = false).toItem()
-        viewModel.updateItem(item)
-        val updatedItems = viewModel.allItems.value // LiveData의 값을 가져옴
-        Log.d("ItemUpdate", "Updated items: $updatedItems")
-        Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
-
-        if (!isTodoExpanded.value) {
-            isTodoExpanded.value = true
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -219,15 +207,16 @@ fun PageContent(
         }
         fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
             if (isInProgress) {
-                if (checked) {
-                    addItemToCompleted(item)
-                    items.remove(item)
-                }
-                }else {
-                if (!checked) {
-                    addItemToInProgress(item)
-                    completionItems.remove(item)
-                }
+                val updatedItem = item.copy(isCompleted = checked).toItem()
+                Log.d("ItemUpdate", "Updated items: $updatedItem")
+                viewModel.updateItem(updatedItem)
+                if(checked) addItemToCompleted(item)
+                items.remove(item)
+            }else {
+                val updatedItem = item.copy(isCompleted = checked).toItem()
+                Log.d("ItemUpdate", "Updated items: $updatedItem")
+                viewModel.updateItem(updatedItem)
+                completionItems.remove(item)
             }
         }
         Column(modifier = Modifier.fillMaxSize()) {
@@ -382,7 +371,6 @@ fun PageContent(
 
 @Composable
 fun ItemRow(
-
     item: ItemData,
     isInProgress: Boolean,
     isEditing: MutableState<Boolean>,
@@ -390,8 +378,6 @@ fun ItemRow(
     onCheckedChange: (Boolean, ItemData) -> Unit,
     onDelete: (ItemData) -> Unit // Add this parameter to handle deletion
 ) {
-    var checked by remember { mutableStateOf(false) }
-    val viewModel: ItemViewModel = viewModel(factory = ItemViewModelFactory(LocalContext.current.applicationContext as Application))
     // 진행 중이 아닌 경우 배경 색상 설정
     val rowBackgroundColor = if (isInProgress) {
         Color.LightGray.copy(alpha = 0.3f) // 진행 중일 때는 연한 회색 배경
@@ -411,22 +397,19 @@ fun ItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (!isEditing.value || editingItem.value != item) {
-        Checkbox(
-            checked = if (!isInProgress) true else checked,
-            onCheckedChange = { isChecked ->
-                checked = isChecked
-                onCheckedChange(isChecked, item) // Handle checked change
-                //checked = isChecked
-                checked = false
-           },
-            modifier = Modifier
-                .size(50.dp)
-                .weight(0.5f),  // 1등분 차지
-            colors = CheckboxDefaults.colors(
-                checkedColor = Color.Blue,
-                uncheckedColor = Color.Gray
+            Checkbox(
+                checked = item.isCompleted,
+                onCheckedChange = { isChecked ->
+                    onCheckedChange(isChecked, item) // Handle checked change
+                },
+                modifier = Modifier
+                    .size(50.dp)
+                    .weight(0.5f),  // 1등분 차지
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color.Blue,
+                    uncheckedColor = Color.Gray
+                )
             )
-        )
         }
 
         Column(
@@ -467,7 +450,6 @@ fun ItemRow(
             )
 
             Spacer(modifier = Modifier.height(4.dp))  // 두 줄 사이에 여백 추가
-
             // 시간:분:초 표시
             Text(
                 text = dateParts.getOrNull(1) ?: "",
@@ -486,12 +468,6 @@ fun ItemRow(
                 ),
                     onClick = {isEditing.value = true; editingItem.value = item }
                 ) {
-                    LaunchedEffect(isEditing.value) {
-                        if(!isEditing.value){ //수정완료시
-                            //viewModel.updateItem(editingItem.value!!.copy(title=userInput.value,content = textInput.value))
-                        }
-                    }
-
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
