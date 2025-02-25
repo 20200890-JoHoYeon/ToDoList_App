@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -37,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -148,6 +150,9 @@ fun PageContent(
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>
 ) {
+    // 삭제 다이얼로그를 위한 변수들
+    val showDialog = remember { mutableStateOf(false) }
+    val itemToDelete = remember { mutableStateOf<ItemData?>(null) }
     val addItemToCompleted = { itemData: ItemData ->
         val item = itemData.copy(isCompleted = true).toItem()
         viewModel.updateItem(item)
@@ -187,23 +192,45 @@ fun PageContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        val onDeleteItem: (ItemData) -> Unit = { itemToDelete ->
+        val onDeleteItem: (ItemData) -> Unit = { item ->
             if (!isEditing.value) {
-                val item = itemToDelete.toItem()
-                viewModel.deleteItem(item)
-                 if (items.contains(itemToDelete)) {
-                    Toast.makeText(context, "진행중인 ToDO 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                 }else if (completionItems.contains(itemToDelete)) {
-                    Toast.makeText(context, "완료된 ToDo 아이템이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-
-                 }else{
-                    Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                // 어떤 리스트에서 삭제되는지 확인
+                val itemType = when {
+                    items.contains(item) -> "진행중인"
+                    completionItems.contains(item) -> "완료된"
+                    else -> null
                 }
 
-
+                if (itemType != null) {
+                    itemToDelete.value = item
+                    showDialog.value = true
+                } else {
+                    Toast.makeText(context, "아이템을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
             }
-            Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
         }
+        if (showDialog.value && itemToDelete.value != null) {
+            val itemType = when {
+                items.contains(itemToDelete.value) -> "진행중인"
+                completionItems.contains(itemToDelete.value) -> "완료된"
+                else -> null
+            }
+
+            if (itemType != null) {
+                DeleteAlertDialog(
+                    showDialog = showDialog,
+                    itemType = itemType,
+                    itemToDelete = itemToDelete.value!!,
+                    viewModel = viewModel,
+                    context = context
+                )
+            } else {
+                Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
             if (isInProgress) {
                 if (!isEditing.value) {
@@ -370,6 +397,39 @@ fun PageContent(
             }
         }
     }
+}
+
+@Composable
+fun DeleteAlertDialog(
+    showDialog: MutableState<Boolean>,
+    itemType: String,
+    itemToDelete: ItemData,
+    viewModel: ItemViewModel,
+    context: Context
+) {
+    AlertDialog(
+        onDismissRequest = { showDialog.value = false },
+        title = { Text("$itemType ToDo 삭제") },
+        text = { Text("정말로 아이템을 삭제하시겠습니까?") },
+        confirmButton = {
+            TextButton(onClick = {
+                viewModel.deleteItem(itemToDelete.toItem())
+                showDialog.value = false
+                Toast.makeText(
+                    context,
+                    "$itemType ToDo 아이템이 삭제되었습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }) {
+                Text("예")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { showDialog.value = false }) {
+                Text("아니오")
+            }
+        }
+    )
 }
 
 
