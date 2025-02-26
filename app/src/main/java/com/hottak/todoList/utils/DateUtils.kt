@@ -27,3 +27,11 @@ fun getTodayMonth(): String {
     val currentDate = LocalDate.now()
     return currentDate.monthValue.toString().padStart(2, '0') // 월이 1자리일 경우 0을 추가
 }
+
+// 오늘 일 반환 함수 (형식: dd)
+@RequiresApi(Build.VERSION_CODES.O)
+fun getTodayDay(): String {
+    val currentDate = LocalDate.now()
+    return currentDate.dayOfMonth.toString().padStart(2, '0') // 월이 1자리일 경우 0을 추가
+}
+

@@ -2,6 +2,8 @@ package com.hottak.todoList.ui.screens
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -77,12 +79,14 @@ import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.BottomBar
 import com.hottak.todoList.ui.components.CustomTextField
 import com.hottak.todoList.ui.components.TopBar
+import com.hottak.todoList.utils.getTodayDay
 import com.hottak.todoList.utils.getTodayMonth
 import com.hottak.todoList.utils.getTodayYear
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -95,19 +99,23 @@ fun Page1ListScreen() {
     val viewModelFactory = ItemViewModelFactory(appContext)
     val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
 
-    // 현재 년월 상태
-    val currentYearMonth = remember { mutableStateOf(YearMonth.of(getTodayYear().toInt(), getTodayMonth().toInt())) }
-    val year = currentYearMonth.value.year
-    val month = currentYearMonth.value.monthValue
-
-    // 날짜를 변경하는 함수
-    val updateYearMonth: (Int) -> Unit = { offset ->
-        currentYearMonth.value = currentYearMonth.value.plusMonths(offset.toLong())
-    }
-
     // 입력 필드
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
+    val dateInput = remember { mutableStateOf("") }
+
+    
+    val pickerDate= remember { mutableStateOf(LocalDateTime.now()) }
+    // 현재 년월 상태
+    val currentDate = remember {
+        mutableStateOf(LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getTodayDay().toInt()))
+    }
+    val year = currentDate.value.year
+    val month = currentDate.value.monthValue
+    // 날짜를 변경하는 함수
+    val updateYearMonth: (Int) -> Unit = { offset ->
+        currentDate.value = currentDate.value.plusMonths(offset.toLong())
+    }
 
     // 데이터베이스에서 가져온 모든 아이템 (ItemData로 변환)
     val allItems: List<ItemData> by viewModel.allItems.observeAsState(emptyList())
@@ -144,7 +152,7 @@ fun Page1ListScreen() {
     }.toMutableStateList()
 
 
-    Log.d("test", "진행중인 items 항목:${year},  ${month}")
+
     Log.d("test", "투두 페이지 진입")
     Log.d("test", "allItems 데이터베이스에서 가져온 아이템 아이템데이터 타입으로 변환: $allItems")
     Log.d("test", "진행중인 items 항목:${items},  ${items.toList()}")
@@ -170,7 +178,7 @@ fun Page1ListScreen() {
                 context = context,
                 isTodoExpanded = isTodoExpanded,
                 isEditing = isEditing,
-                editingItem = editingItem
+                editingItem = editingItem,
             )
         },
         content = { innerPadding ->
@@ -186,7 +194,7 @@ fun Page1ListScreen() {
                 isCompletedTodoExpanded = isCompletedTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem,
-                currentYearMonth = currentYearMonth,
+                currentDate = currentDate,
                 updateYearMonth = updateYearMonth
             )
         }
@@ -208,8 +216,8 @@ fun PageContent(
     isCompletedTodoExpanded: MutableState<Boolean>,
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
-    currentYearMonth: MutableState<YearMonth>,
-    updateYearMonth: (Int) -> Unit
+    currentDate: MutableState<LocalDate>,
+    updateYearMonth: (Int) -> Unit,
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -226,9 +234,66 @@ fun PageContent(
         }
     }
 
-    fun formatDate(yearMonth: YearMonth): String {
+    fun formatDate(yearMonth: LocalDate): String {
         return yearMonth.format(DateTimeFormatter.ofPattern("yyyy년 MM월"))
     }
+
+//
+//    val openDateTimePickerDialog: () -> Unit = {
+//        val year = pickerDate.value.year
+//        val month = pickerDate.value.monthValue - 1 // Month is zero-indexed
+//        val day = pickerDate.value.dayOfMonth
+//        val hour = pickerDate.value.hour
+//        val minute = pickerDate.value.minute
+//        val second = pickerDate.value.second
+//
+//        val datePicker = DatePickerDialog(
+//            context,
+//            { _, selectedYear, selectedMonth, selectedDay ->
+//                val newDate = LocalDate.of(selectedYear, selectedMonth + 1, selectedDay)
+//                pickerDate.value = LocalDateTime.of(newDate, pickerDate.value.toLocalTime()) // Update date without changing time
+//
+//                println("선택한 날짜: $selectedYear-${selectedMonth + 1}-$selectedDay")
+//
+//                // 날짜 선택 후, 시간 선택 다이얼로그 표시
+//                val timePicker = TimePickerDialog(
+//                    context,
+//                    { _, selectedHour, selectedMinute ->
+//                        val newDateTime = LocalDateTime.of(
+//                            selectedYear, selectedMonth + 1, selectedDay, selectedHour, selectedMinute, second, 0
+//                        ) // Add seconds to the selected time
+//                        Log.d("tess", "선택한 날짜 및 시간: $newDateTime")
+//                        Log.d("tess", "선택한 날짜 및 시간 (pickerDate): $pickerDate")
+//                        pickerDate.value = newDateTime // Update the state with the selected date and time
+//
+//                        // Format pickerDate to "dd-MM-yy HH:mm:ss"
+//                        if (dateInput.value.isEmpty()) {
+//                            val currentDateTime = LocalDateTime.now()
+//                            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
+//                            dateInput.value = currentDateTime.format(formatter)
+//                        } else{
+//
+//                            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
+//                            dateInput.value = pickerDate.value.format(formatter).toString()
+//                        }
+//                    },
+//                    hour, // Initialize with the hour from the pickerDate
+//                    minute, // Initialize with the minute from the pickerDate
+//                    false // 24-hour format
+//                )
+//                timePicker.show()
+//            },
+//            year,
+//            month,
+//            day
+//        )
+//
+//        datePicker.show()
+//    }
+
+
+
+
 
     Column(
         modifier = Modifier
@@ -240,6 +305,7 @@ fun PageContent(
         LaunchedEffect(editingItem.value) {
             userInput.value = editingItem.value?.title ?: ""
             textInput.value = editingItem.value?.content ?: ""
+            //dateInput.value = editingItem.value?.date ?: ""
         }
         // 년월 표시 Row
         Row(
@@ -257,15 +323,18 @@ fun PageContent(
             }
 
             Text(
-                text = formatDate(currentYearMonth.value),
+                text = formatDate(currentDate.value),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
+                modifier = Modifier.clickable {
+                    //openDateTimePickerDialog()
+                }
 
             )
 
             IconButton(onClick = {
                 updateYearMonth(1)
-                Log.d("test", "날짜 ${currentYearMonth.value}")
+                Log.d("test", "날짜 ${currentDate.value}")
             }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -273,31 +342,45 @@ fun PageContent(
                 )
             }
         }
-        Row() {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             CustomTextField(
                 value = userInput,
                 placeholder = "제목을 입력해주세요 (최대 12자)",
                 onValueChange = { userInput.value = it },
                 label = if (isEditing.value) "Edit Title" else "Enter Title",
-                modifier = Modifier.fillMaxWidth(),
-                maxLength = 12
+                modifier = Modifier.weight(1f), // TextField가 남는 공간을 차지하도록 설정
+                maxLength = 12,
+                endPadding= 4.dp,
             )
-            IconButton(onClick = {
-                updateYearMonth(-1)
-                Log.d("test", "날짜 ${currentYearMonth.value}")
-            }) {
+
+            IconButton(
+                modifier = Modifier
+                    .padding(top = 16.dp, end = 14.dp) // 적절한 패딩 추가
+                    .size(40.dp), // 버튼 크기 조정 (아이콘이 적절히 들어가도록 설정)
+
+                onClick = {
+                    //openDateTimePickerDialog()
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Default.DateRange,
-                    contentDescription = "ItemFieldShow"
+                    contentDescription = "날짜 선택",
+                    tint = Color.Black // 아이콘 색상 변경
                 )
             }
         }
+
         CustomTextField(
             value = textInput,
             placeholder = "내용을 입력해주세죠 (최대 100자)",
             onValueChange = { textInput.value = it },
             label = if (isEditing.value) "Edit Item" else "Enter Item",
             modifier = Modifier.fillMaxWidth(),
+
         )
 
         val onDeleteItem: (ItemData) -> Unit = { item ->

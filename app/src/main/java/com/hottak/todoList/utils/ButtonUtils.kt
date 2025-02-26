@@ -11,6 +11,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.colorResource
+import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.toItem
@@ -20,12 +22,12 @@ import com.hottak.todoList.model.toItem
 fun getButtonColors(isEditing: Boolean): ButtonColors {
     return if (!isEditing) { // 수정 모드 버튼 색깔
         ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF2A4174),
+            containerColor = colorResource(id = R.color.todo_blue),
             contentColor = Color.White
         )
     } else { // 기본 모드 버튼 색깔
         ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF2A4174),
+            containerColor = colorResource(id = R.color.todo_blue),
             contentColor = Color.White
         )
     }
