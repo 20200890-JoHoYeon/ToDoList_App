@@ -18,29 +18,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
@@ -65,11 +63,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,7 +77,10 @@ import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.BottomBar
 import com.hottak.todoList.ui.components.CustomTextField
 import com.hottak.todoList.ui.components.TopBar
-
+import com.hottak.todoList.utils.getTodayMonth
+import com.hottak.todoList.utils.getTodayYear
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
@@ -98,6 +95,16 @@ fun Page1ListScreen() {
     val viewModelFactory = ItemViewModelFactory(appContext)
     val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
 
+    // 현재 년월 상태
+    val currentYearMonth = remember { mutableStateOf(YearMonth.of(getTodayYear().toInt(), getTodayMonth().toInt())) }
+    val year = currentYearMonth.value.year
+    val month = currentYearMonth.value.monthValue
+
+    // 날짜를 변경하는 함수
+    val updateYearMonth: (Int) -> Unit = { offset ->
+        currentYearMonth.value = currentYearMonth.value.plusMonths(offset.toLong())
+    }
+
     // 입력 필드
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
@@ -105,14 +112,44 @@ fun Page1ListScreen() {
     // 데이터베이스에서 가져온 모든 아이템 (ItemData로 변환)
     val allItems: List<ItemData> by viewModel.allItems.observeAsState(emptyList())
     val allCompletedItems: List<ItemData> by viewModel.allCompletedItems.observeAsState(emptyList())
-    // 진행 중인 항목
+
+    // 필터링된 항목을 MutableStateList로 변환
     val items = allItems.toMutableStateList()
-    // 완료된 항목
     val completionItems = allCompletedItems.toMutableStateList()
+
+    // 필터링된 진행중인 할 일 목록
+    val filteredItems = items.filter { item ->
+        // Assuming item.date is a String, parse it to LocalDate
+        val dateFormatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss") // Adjust the pattern if needed
+        val itemDate = LocalDateTime.parse(item.date, dateFormatter)
+
+        // Extract the YearMonth from the parsed date
+        val itemYearMonth = YearMonth.from(itemDate)
+
+        // Compare the extracted year and month with the current year and month
+        itemYearMonth.year == year && itemYearMonth.monthValue == month
+    }.toMutableStateList()
+
+    // 필터링된 완료된 할 일 목록
+    val filteredCompletionItems = completionItems.filter { item ->
+        // Assuming item.date is a String, parse it to LocalDate
+        val dateFormatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss") // Adjust the pattern if needed
+        val itemDate = LocalDateTime.parse(item.date, dateFormatter)
+
+        // Extract the YearMonth from the parsed date
+        val itemYearMonth = YearMonth.from(itemDate)
+
+        // Compare the extracted year and month with the current year and month
+        itemYearMonth.year == year && itemYearMonth.monthValue == month
+    }.toMutableStateList()
+
+
+    Log.d("test", "진행중인 items 항목:${year},  ${month}")
     Log.d("test", "투두 페이지 진입")
     Log.d("test", "allItems 데이터베이스에서 가져온 아이템 아이템데이터 타입으로 변환: $allItems")
     Log.d("test", "진행중인 items 항목:${items},  ${items.toList()}")
     Log.d("test", "완료된 items 항목:${completionItems},  ${completionItems.toList()}")
+
     // 상태 변수
     val isTodoExpanded = remember { mutableStateOf(false) }
     val isCompletedTodoExpanded = remember { mutableStateOf(false) }
@@ -142,13 +179,15 @@ fun Page1ListScreen() {
                 viewModel = viewModel,
                 userInput = userInput,
                 textInput = textInput,
-                items = items,
-                completionItems = completionItems,
+                items = filteredItems,
+                completionItems = filteredCompletionItems,
                 context = context,
                 isTodoExpanded = isTodoExpanded,
                 isCompletedTodoExpanded = isCompletedTodoExpanded,
                 isEditing = isEditing,
-                editingItem = editingItem
+                editingItem = editingItem,
+                currentYearMonth = currentYearMonth,
+                updateYearMonth = updateYearMonth
             )
         }
     )
@@ -168,7 +207,9 @@ fun PageContent(
     isTodoExpanded: MutableState<Boolean>,
     isCompletedTodoExpanded: MutableState<Boolean>,
     isEditing: MutableState<Boolean>,
-    editingItem: MutableState<ItemData?>
+    editingItem: MutableState<ItemData?>,
+    currentYearMonth: MutableState<YearMonth>,
+    updateYearMonth: (Int) -> Unit
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -183,14 +224,6 @@ fun PageContent(
         if (!isCompletedTodoExpanded.value) {
             isCompletedTodoExpanded.value = true
         }
-    }
-
-    // 현재 년월을 저장할 상태
-    val currentYearMonth = remember { mutableStateOf(YearMonth.of(2025, 3)) }
-
-    // 년월을 업데이트하는 함수
-    val updateYearMonth: (Int) -> Unit = { offset ->
-        currentYearMonth.value = currentYearMonth.value.plusMonths(offset.toLong())
     }
 
     fun formatDate(yearMonth: YearMonth): String {
@@ -230,22 +263,35 @@ fun PageContent(
 
             )
 
-            IconButton(onClick = { updateYearMonth(1) }) {
+            IconButton(onClick = {
+                updateYearMonth(1)
+                Log.d("test", "날짜 ${currentYearMonth.value}")
+            }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "다음 달"
                 )
             }
         }
-
-        CustomTextField(
-            value = userInput,
-            placeholder = "제목을 입력해주세요 (최대 10자)",
-            onValueChange = { userInput.value = it },
-            label = if (isEditing.value) "Edit Title" else "Enter Title",
-            modifier = Modifier.fillMaxWidth(),
-            maxLength = 10
-        )
+        Row() {
+            CustomTextField(
+                value = userInput,
+                placeholder = "제목을 입력해주세요 (최대 12자)",
+                onValueChange = { userInput.value = it },
+                label = if (isEditing.value) "Edit Title" else "Enter Title",
+                modifier = Modifier.fillMaxWidth(),
+                maxLength = 12
+            )
+            IconButton(onClick = {
+                updateYearMonth(-1)
+                Log.d("test", "날짜 ${currentYearMonth.value}")
+            }) {
+                Icon(
+                    imageVector = Icons.Default.DateRange,
+                    contentDescription = "ItemFieldShow"
+                )
+            }
+        }
         CustomTextField(
             value = textInput,
             placeholder = "내용을 입력해주세죠 (최대 100자)",
@@ -599,10 +645,16 @@ fun ItemRow(
             onDismissRequest = { showPopup.value = false },
             title = { Text(text = item.title, fontWeight = FontWeight.Bold) },
             text = {
-                Column {
-                    Text(text = item.content, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "날짜: ${item.date}", fontSize = 12.sp, color = Color.Gray)
+                Box(
+                    modifier = Modifier
+                        .heightIn(min = 100.dp, max = 300.dp) // 최소 높이 & 최대 높이 설정
+                        .verticalScroll(rememberScrollState()) // 스크롤 가능하도록 설정
+                ) {
+                    Column {
+                        Text(text = item.content, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = "날짜: ${item.date}", fontSize = 12.sp, color = Color.Gray)
+                    }
                 }
             },
             confirmButton = {
@@ -615,4 +667,3 @@ fun ItemRow(
         )
     }
 }
-
