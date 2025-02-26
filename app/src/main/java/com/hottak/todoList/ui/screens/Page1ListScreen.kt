@@ -1,5 +1,6 @@
 package com.hottak.todoList.ui.screens
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.os.Build
@@ -20,14 +21,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -51,8 +60,13 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
@@ -61,6 +75,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
@@ -69,6 +84,10 @@ import com.hottak.todoList.ui.components.BottomBar
 import com.hottak.todoList.ui.components.CustomTextField
 import com.hottak.todoList.ui.components.TopBar
 
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+
+@SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
@@ -135,6 +154,7 @@ fun Page1ListScreen() {
     )
 }
 
+@SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PageContent(
@@ -165,6 +185,18 @@ fun PageContent(
         }
     }
 
+    // 현재 년월을 저장할 상태
+    val currentYearMonth = remember { mutableStateOf(YearMonth.of(2025, 3)) }
+
+    // 년월을 업데이트하는 함수
+    val updateYearMonth: (Int) -> Unit = { offset ->
+        currentYearMonth.value = currentYearMonth.value.plusMonths(offset.toLong())
+    }
+
+    fun formatDate(yearMonth: YearMonth): String {
+        return yearMonth.format(DateTimeFormatter.ofPattern("yyyy년 MM월"))
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -176,6 +208,36 @@ fun PageContent(
             userInput.value = editingItem.value?.title ?: ""
             textInput.value = editingItem.value?.content ?: ""
         }
+        // 년월 표시 Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { updateYearMonth(-1) }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "이전 달"
+                )
+            }
+
+            Text(
+                text = formatDate(currentYearMonth.value),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+
+            )
+
+            IconButton(onClick = { updateYearMonth(1) }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "다음 달"
+                )
+            }
+        }
+
         CustomTextField(
             value = userInput,
             placeholder = "제목을 입력해주세요 (최대 10자)",
@@ -433,6 +495,7 @@ fun DeleteAlertDialog(
 }
 
 
+
 @Composable
 fun ItemRow(
     item: ItemData,
@@ -440,23 +503,30 @@ fun ItemRow(
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
     onCheckedChange: (Boolean, ItemData) -> Unit,
-    onDelete: (ItemData) -> Unit // Add this parameter to handle deletion
+    onDelete: (ItemData) -> Unit
 ) {
-    // 진행 중이 아닌 경우 배경 색상 설정
-    val rowBackgroundColor = if (isInProgress) {
-        Color.LightGray.copy(alpha = 0.3f) // 진행 중일 때는 연한 회색 배경
-    } else {
-        Color.White.copy(alpha = 0.5f) // 완료된 항목은 투명도 적용
-    }
-    val dateParts = item.date.split(" ")
+
+    val showPopup = remember { mutableStateOf(false) } // 팝업 상태 관리
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, top = 20.dp, end = 20.dp)
-            .background(rowBackgroundColor, shape = RoundedCornerShape(8.dp))
-            .padding(start = 20.dp, top = 16.dp, bottom = 16.dp, end = 20.dp)
-            .then(Modifier.alpha(if (isInProgress) 1f else 0.5f)),
+            .wrapContentHeight()
+            .padding(start = 10.dp, top = 10.dp, end = 10.dp)
+            .background(Color.White, shape = RoundedCornerShape(8.dp))
+            .padding(start = 16.dp, end = 16.dp)
+            .then(Modifier.alpha(if (isInProgress) 1f else 0.5f))
+            .clickable { showPopup.value = true } // 터치 시 팝업 표시
+            .drawBehind {
+                val strokeWidth = 1.dp.toPx() // 선 두께
+                val y = size.height - strokeWidth / 4 // 하단 위치 조정
+                drawLine(
+                    color = Color.LightGray, // 밑줄 색상 (변경 가능)
+                    start = Offset(0f, y),
+                    end = Offset(size.width, y),
+                    strokeWidth = strokeWidth
+                )
+            },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -464,11 +534,9 @@ fun ItemRow(
             Checkbox(
                 checked = item.isCompleted,
                 onCheckedChange = { isChecked ->
-                    onCheckedChange(isChecked, item) // Handle checked change
+                    onCheckedChange(isChecked, item)
                 },
-                modifier = Modifier
-                    .size(50.dp)
-                    .weight(0.5f),  // 1등분 차지
+                modifier = Modifier.size(50.dp),
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color.Blue,
                     uncheckedColor = Color.Gray
@@ -478,89 +546,73 @@ fun ItemRow(
 
         Column(
             modifier = Modifier
-                .weight(3f)  // 제목과 내용이 차지할 비율
-                .padding(start = 16.dp)
+                .weight(3f)
+                .padding(start = 8.dp)
         ) {
             Text(
                 text = item.title,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
-                color = Color(0xFF2A4174),
-                maxLines = 1,  // 한 줄로 제한 (길면 생략부호 처리 가능)
-                overflow = TextOverflow.Ellipsis  // 넘치면 ... 처리
+                color = colorResource(id = R.color.todo_blue), // XML 색상 리소스 사용
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = item.content,
-                fontSize = 14.sp,
-                color = Color.Black,
-                modifier = Modifier.padding(top = 4.dp).fillMaxWidth(),
-                style = TextStyle(
-                    lineBreak = LineBreak.Paragraph,
-                )
-            )
+            Spacer(modifier = Modifier.width(10.dp))
         }
 
-        Column(
-            modifier = Modifier
-                .padding(start = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.padding(start = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // 년-월-일 표시
-            Text(
-                text = dateParts.getOrNull(0) ?: "",
-                fontSize = 14.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))  // 두 줄 사이에 여백 추가
-            // 시간:분:초 표시
-            Text(
-                text = dateParts.getOrNull(1) ?: "",
-                fontSize = 14.sp,
-                color = Color.Black,
-            )
-            Row (
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            )
-            {
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2A4174),
-                    contentColor = Color.White
-                ),
-                    onClick = {isEditing.value = true; editingItem.value = item }
+            Row {
+                IconButton(
+                    modifier = Modifier.size(40.dp), // 정사각형 크기 설정
+                    onClick = { isEditing.value = true; editingItem.value = item }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
+                        imageVector = Icons.Default.Create,
                         contentDescription = "Edit",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp) // 아이콘 크기 고정
+                        tint = Color.Black, // 아이콘 색상 블랙
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(6.dp))  // 두 줄 사이에 여백 추가
 
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Black,
-                        contentColor = Color.White
-                    ),
-                    onClick = {
-                        onDelete(item)
-                    }
+                IconButton(
+                    modifier = Modifier.size(40.dp), // 정사각형 크기 설정
+                    onClick = { onDelete(item) }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        imageVector = Icons.Default.Clear,
                         contentDescription = "Delete",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp) // 아이콘 크기 고정
+                        tint = Color.Black, // 아이콘 색상 블랙
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
+
         }
     }
-}
 
+    if (showPopup.value) {
+        AlertDialog(
+            onDismissRequest = { showPopup.value = false },
+            title = { Text(text = item.title, fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text(text = item.content, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "날짜: ${item.date}", fontSize = 12.sp, color = Color.Gray)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showPopup.value = false }
+                ) {
+                    Text("닫기")
+                }
+            }
+        )
+    }
+}
 
