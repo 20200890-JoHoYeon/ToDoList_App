@@ -41,10 +41,15 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -53,19 +58,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -163,10 +172,11 @@ fun Page1ListScreen() {
     Log.d("test", "완료된 items 항목:${completionItems},  ${completionItems.toList()}")
 
     // 상태 변수
-    val isTodoExpanded = remember { mutableStateOf(false) }
-    val isCompletedTodoExpanded = remember { mutableStateOf(false) }
-    val isEditing = remember { mutableStateOf(false) }
-    val editingItem = remember { mutableStateOf<ItemData?>(null) }
+    val isTodoExpanded = remember { mutableStateOf(false) }//진행중인 리스트 아코디언
+    val isCompletedTodoExpanded = remember { mutableStateOf(false) }//완료된 리스트 아코디언
+    val isEditing = remember { mutableStateOf(false) }//수정모드 구분자
+    val editingItem = remember { mutableStateOf<ItemData?>(null) }//수정모드 대상 아이템
+    val isDatePickerVisible =  remember { mutableStateOf(false) }//상단 년월 필터링 설정픽커 구분자
 
     Scaffold(
         containerColor = Color.White,
@@ -200,6 +210,7 @@ fun Page1ListScreen() {
                 isCompletedTodoExpanded = isCompletedTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem,
+                isDatePickerVisible = isDatePickerVisible,
                 currentDate = currentDate,
                 updateYearMonth = updateYearMonth,
                 pickerDate=pickerDate
@@ -227,6 +238,7 @@ fun PageContent(
     updateYearMonth: (Int) -> Unit,
     dateInput: MutableState<String>,
     pickerDate: MutableState<LocalDateTime>,
+    isDatePickerVisible: MutableState<Boolean>,
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -302,10 +314,6 @@ fun PageContent(
         datePicker.show()
     }
 
-
-
-
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -338,7 +346,7 @@ fun PageContent(
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 modifier = Modifier.clickable {
-                    //openDateTimePickerDialog()
+                    isDatePickerVisible.value = true
                 }
 
             )
@@ -353,6 +361,15 @@ fun PageContent(
                 )
             }
         }
+
+        if (isDatePickerVisible.value) {
+            YearMonthPickerBottomSheet(
+                currentDate = currentDate.value,
+                onDateSelected = { selectedDate -> currentDate.value = selectedDate },
+                onDismiss = { isDatePickerVisible.value = false }
+            )
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -519,8 +536,8 @@ fun PageContent(
                             editingItem = editingItem,
                             isInProgress = true,
                             onDelete = onDeleteItem,
-                            onCheckedChange = { checked, item ->
-                                handleCheckedChange(checked, item, true)
+                            onCheckedChange = { checked, itemData ->
+                                handleCheckedChange(checked, itemData, true)
                             }
                         )
                     }
@@ -591,8 +608,8 @@ fun PageContent(
                             editingItem = editingItem,
                             isInProgress = false,
                             onDelete = onDeleteItem,
-                            onCheckedChange = { checked, item ->
-                                handleCheckedChange(checked, item, false)
+                            onCheckedChange = { checked, itemData ->
+                                handleCheckedChange(checked, itemData, false)
                             }
 
                         )
@@ -761,5 +778,129 @@ fun ItemRow(
                 }
             }
         )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@Composable
+fun YearMonthPickerBottomSheet(
+    currentDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val currentYear = LocalDate.now().year
+    val years = (currentYear - 50..currentYear + 10).toList() // 과거 50년 ~ 미래 10년
+    val months = (1..12).toList()
+
+    var selectedYear by remember { mutableIntStateOf(currentDate.year) }
+    var selectedMonth by remember { mutableIntStateOf(currentDate.monthValue) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(30.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                modifier = Modifier.padding(bottom = 16.dp),
+                text = "연도 및 월 선택",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            // 연도 선택
+            ExposedDropdownMenuBox(
+                label = "연도",
+                options = years,
+                selectedOption = selectedYear,
+                onOptionSelected = { selectedYear = it }
+            )
+
+            // 월 선택
+            ExposedDropdownMenuBox(
+                label = "월",
+                options = months,
+                selectedOption = selectedMonth,
+                onOptionSelected = { selectedMonth = it }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
+            ) {
+                TextButton(
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(46.dp),
+                    onClick = onDismiss
+                ) {
+                    Text("취소", color = Color.Gray)
+                }
+                Button(
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(46.dp),
+                    onClick = {
+                        onDateSelected(LocalDate.of(selectedYear, selectedMonth, 1))
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.todo_blue))
+                ) {
+                    Text("확인", color = Color.White)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+fun <T> ExposedDropdownMenuBox(
+    label: String,
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+    ) {
+        Text(label, fontSize = 14.sp, color = Color.Gray)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { expanded = true }
+                .padding(16.dp)
+        ) {
+            Text(selectedOption.toString(), fontSize = 20.sp)
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.toString(), fontSize = 14.sp) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }
