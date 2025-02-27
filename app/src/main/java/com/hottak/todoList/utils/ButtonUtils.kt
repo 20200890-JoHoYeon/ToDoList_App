@@ -41,7 +41,8 @@ fun handleButtonClick(
     context: Context,
     isTodoExpanded: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
-    viewModel: ItemViewModel
+    viewModel: ItemViewModel,
+    dateInput: MutableState<String>
 ) {
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
@@ -50,6 +51,7 @@ fun handleButtonClick(
             item.title = userInput.value
             item.content = textInput.value
             item.date = getCurrentDate()
+            item.date = dateInput.value
             viewModel.updateItem(item.toItem())
             isEditing.value = false
             editingItem.value = null
@@ -63,7 +65,7 @@ fun handleButtonClick(
         }
     } else {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-            viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = getCurrentDate(), isCompleted = false).toItem())
+            viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem())
             Log.d("test", "insert items")
             textInput.value = ""
             userInput.value = ""

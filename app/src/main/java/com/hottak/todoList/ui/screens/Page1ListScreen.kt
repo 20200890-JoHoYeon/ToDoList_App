@@ -108,7 +108,7 @@ fun Page1ListScreen() {
         val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
         dateInput.value = currentDateTime.format(formatter)
     }
-
+    Log.d("test", "초기dateInput: ${dateInput.value}")
     val pickerDate= remember { mutableStateOf(LocalDateTime.now()) }
     // 현재 년월 상태
     val currentDate = remember {
@@ -179,6 +179,7 @@ fun Page1ListScreen() {
                 viewModel = viewModel,
                 userInput = userInput,
                 textInput = textInput,
+                dateInput = dateInput,
                 context = context,
                 isTodoExpanded = isTodoExpanded,
                 isEditing = isEditing,
@@ -191,6 +192,7 @@ fun Page1ListScreen() {
                 viewModel = viewModel,
                 userInput = userInput,
                 textInput = textInput,
+                dateInput =dateInput,
                 items = filteredItems,
                 completionItems = filteredCompletionItems,
                 context = context,
@@ -200,7 +202,6 @@ fun Page1ListScreen() {
                 editingItem = editingItem,
                 currentDate = currentDate,
                 updateYearMonth = updateYearMonth,
-                dateInput= dateInput,
                 pickerDate=pickerDate
             )
         }
@@ -369,7 +370,7 @@ fun PageContent(
 
             IconButton(
                 modifier = Modifier
-                    .padding(top = 16.dp, end = 14.dp) // 적절한 패딩 추가
+                    .padding(top = 16.dp, end = 16.dp) // 적절한 패딩 추가
                     .size(40.dp), // 버튼 크기 조정 (아이콘이 적절히 들어가도록 설정)
 
                 onClick = {

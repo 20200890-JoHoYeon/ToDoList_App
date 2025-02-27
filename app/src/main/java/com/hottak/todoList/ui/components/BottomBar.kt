@@ -31,7 +31,8 @@ fun BottomBar(
     isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
-    viewModel: ItemViewModel
+    viewModel: ItemViewModel,
+    dateInput: MutableState<String>
 
 ) {
     BottomAppBar(
@@ -52,6 +53,7 @@ fun BottomBar(
                         isEditing = isEditing,
                         userInput = userInput,
                         textInput = textInput,
+                        dateInput = dateInput,
                         context = context,
                         isTodoExpanded = isTodoExpanded,
                         editingItem = editingItem
