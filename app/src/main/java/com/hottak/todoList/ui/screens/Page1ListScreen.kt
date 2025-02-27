@@ -88,11 +88,12 @@ import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.BottomBar
 import com.hottak.todoList.ui.components.CustomTextField
 import com.hottak.todoList.ui.components.TopBar
-import com.hottak.todoList.utils.getTodayDay
+import com.hottak.todoList.utils.getFirstDay
 import com.hottak.todoList.utils.getTodayMonth
 import com.hottak.todoList.utils.getTodayYear
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
@@ -107,6 +108,9 @@ fun Page1ListScreen() {
     val viewModelFactory = ItemViewModelFactory(appContext)
     val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
 
+    //날짜 포맷
+    val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
+
     // 입력 필드
     val userInput = remember { mutableStateOf("") }
     val textInput = remember { mutableStateOf("") }
@@ -114,20 +118,26 @@ fun Page1ListScreen() {
     //dateInput 비어있는 경우 오늘 날짜로 초기화
     if (dateInput.value.isEmpty()) {
         val currentDateTime = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
+
         dateInput.value = currentDateTime.format(formatter)
     }
     Log.d("test", "초기dateInput: ${dateInput.value}")
-    val pickerDate= remember { mutableStateOf(LocalDateTime.now()) }
+    val pickerDate = remember { mutableStateOf(LocalDateTime.now()) }
+    //날짜별 필터링 변환 시 데이트 피커의 초기값 매칭용 변수
+    //날짜 설정 후 아이템 생성 시 해당 값 데이트 피커 초기값 유지
+    val pickerDateInitialValue = remember { mutableStateOf("") }
     // 현재 년월 상태
     val currentDate = remember {
-        mutableStateOf(LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getTodayDay().toInt()))
+        mutableStateOf(LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getFirstDay().toInt()))
     }
     val year = currentDate.value.year
     val month = currentDate.value.monthValue
     // 날짜를 변경하는 함수
     val updateYearMonth: (Int) -> Unit = { offset ->
         currentDate.value = currentDate.value.plusMonths(offset.toLong())
+        val dateTime = LocalDateTime.of(currentDate.value, LocalTime.MIDNIGHT)
+        dateInput.value = dateTime.format(formatter)
+        pickerDateInitialValue.value = dateInput.value
     }
 
     // 데이터베이스에서 가져온 모든 아이템 (ItemData로 변환)
@@ -140,30 +150,17 @@ fun Page1ListScreen() {
 
     // 필터링된 진행중인 할 일 목록
     val filteredItems = items.filter { item ->
-        // Assuming item.date is a String, parse it to LocalDate
-        val dateFormatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss") // Adjust the pattern if needed
-        val itemDate = LocalDateTime.parse(item.date, dateFormatter)
-
-        // Extract the YearMonth from the parsed date
+        val itemDate = LocalDateTime.parse(item.date, formatter)
         val itemYearMonth = YearMonth.from(itemDate)
-
-        // Compare the extracted year and month with the current year and month
         itemYearMonth.year == year && itemYearMonth.monthValue == month
     }.toMutableStateList()
 
     // 필터링된 완료된 할 일 목록
     val filteredCompletionItems = completionItems.filter { item ->
-        // Assuming item.date is a String, parse it to LocalDate
-        val dateFormatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss") // Adjust the pattern if needed
-        val itemDate = LocalDateTime.parse(item.date, dateFormatter)
-
-        // Extract the YearMonth from the parsed date
+        val itemDate = LocalDateTime.parse(item.date, formatter)
         val itemYearMonth = YearMonth.from(itemDate)
-
-        // Compare the extracted year and month with the current year and month
         itemYearMonth.year == year && itemYearMonth.monthValue == month
     }.toMutableStateList()
-
 
 
     Log.d("test", "투두 페이지 진입")
@@ -194,6 +191,7 @@ fun Page1ListScreen() {
                 isTodoExpanded = isTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem,
+                pickerDateInitialValue=pickerDateInitialValue,
             )
         },
         content = { innerPadding ->
@@ -213,7 +211,8 @@ fun Page1ListScreen() {
                 isDatePickerVisible = isDatePickerVisible,
                 currentDate = currentDate,
                 updateYearMonth = updateYearMonth,
-                pickerDate=pickerDate
+                pickerDate=pickerDate,
+                pickerDateInitialValue=pickerDateInitialValue
             )
         }
     )
@@ -239,6 +238,7 @@ fun PageContent(
     dateInput: MutableState<String>,
     pickerDate: MutableState<LocalDateTime>,
     isDatePickerVisible: MutableState<Boolean>,
+    pickerDateInitialValue: MutableState<String>,
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -261,48 +261,49 @@ fun PageContent(
 
 
     val openDateTimePickerDialog: () -> Unit = {
-        val year = pickerDate.value.year
-        val month = pickerDate.value.monthValue - 1 // Month is zero-indexed
-        val day = pickerDate.value.dayOfMonth
-        val hour = pickerDate.value.hour
-        val minute = pickerDate.value.minute
-        val second = pickerDate.value.second
+        // pickerDateInitialValue가 존재하면 이를 사용하고, 없으면 현재 시간 사용,
+        // 날짜 설정 후 아이템 생성 시 해당 값 데이트 피커 초기값 유지
+        val initialDateTime = try {
+            pickerDateInitialValue.value.let {
+                LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss"))
+            } ?: LocalDateTime.now()
+        } catch (e: Exception) {
+            LocalDateTime.now()
+        }
+
+        val year = initialDateTime.year
+        val month = initialDateTime.monthValue - 1 // Month is zero-indexed
+        val day = initialDateTime.dayOfMonth
+        val hour = initialDateTime.hour
+        val minute = initialDateTime.minute
+        val second = initialDateTime.second
 
         val datePicker = DatePickerDialog(
             context,
             { _, selectedYear, selectedMonth, selectedDay ->
                 val newDate = LocalDate.of(selectedYear, selectedMonth + 1, selectedDay)
-                pickerDate.value = LocalDateTime.of(newDate, pickerDate.value.toLocalTime()) // Update date without changing time
+                pickerDate.value = LocalDateTime.of(newDate, pickerDate.value.toLocalTime()) // 날짜 업데이트
 
                 println("선택한 날짜: $selectedYear-${selectedMonth + 1}-$selectedDay")
 
-                // 날짜 선택 후, 시간 선택 다이얼로그 표시
+                // 시간 선택 다이얼로그 표시
                 val timePicker = TimePickerDialog(
                     context,
                     { _, selectedHour, selectedMinute ->
                         val newDateTime = LocalDateTime.of(
-                            selectedYear, selectedMonth + 1, selectedDay, selectedHour, selectedMinute, second, 0
-                        ) // Add seconds to the selected time
+                            selectedYear, selectedMonth + 1, selectedDay, selectedHour, selectedMinute, second
+                        )
                         Log.d("test", "선택한 날짜 및 시간: $newDateTime")
-                        Log.d("test", "선택한 날짜 및 시간 (pickerDate): $pickerDate")
-                        pickerDate.value = newDateTime // Update the state with the selected date and time
+                        pickerDate.value = newDateTime // 선택한 시간 반영
 
-                        // Format pickerDate to "dd-MM-yy HH:mm:ss"
-                        if (dateInput.value.isEmpty()) {
-                            val currentDateTime = LocalDateTime.now()
-                            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
-                            dateInput.value = currentDateTime.format(formatter)
-                        } else{
-
-                            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
-                            dateInput.value = pickerDate.value.format(formatter).toString()
-                            Log.d("test", "dateInput: ${dateInput.value}")
-                            Log.d("test", "pickerDate: ${pickerDate.value}")
-                        }
+                        // 날짜 형식 변환하여 dateInput에 저장
+                        val formatter = DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss")
+                        dateInput.value = pickerDate.value.format(formatter)
+                        Log.d("test", "dateInput: ${dateInput.value}")
                     },
-                    hour, // Initialize with the hour from the pickerDate
-                    minute, // Initialize with the minute from the pickerDate
-                    false // 24-hour format
+                    hour,
+                    minute,
+                    false // 24시간 형식 사용 여부 (false = 12시간 형식)
                 )
                 timePicker.show()
             },
@@ -313,6 +314,7 @@ fun PageContent(
 
         datePicker.show()
     }
+
 
     Column(
         modifier = Modifier

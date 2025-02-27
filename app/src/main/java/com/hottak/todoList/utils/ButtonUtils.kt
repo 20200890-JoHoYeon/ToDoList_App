@@ -42,7 +42,8 @@ fun handleButtonClick(
     isTodoExpanded: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
     viewModel: ItemViewModel,
-    dateInput: MutableState<String>
+    dateInput: MutableState<String>,
+    pickerDateInitialValue: MutableState<String>
 ) {
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
@@ -52,6 +53,7 @@ fun handleButtonClick(
             item.content = textInput.value
             item.date = getCurrentDate()
             item.date = dateInput.value
+            pickerDateInitialValue.value = dateInput.value
             viewModel.updateItem(item.toItem())
             isEditing.value = false
             editingItem.value = null
@@ -67,6 +69,7 @@ fun handleButtonClick(
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
             viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem())
             Log.d("test", "insert items")
+            pickerDateInitialValue.value = dateInput.value
             textInput.value = ""
             userInput.value = ""
             Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()

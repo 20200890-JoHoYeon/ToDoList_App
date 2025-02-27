@@ -32,7 +32,8 @@ fun BottomBar(
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
     viewModel: ItemViewModel,
-    dateInput: MutableState<String>
+    dateInput: MutableState<String>,
+    pickerDateInitialValue: MutableState<String>
 
 ) {
     BottomAppBar(
@@ -56,7 +57,8 @@ fun BottomBar(
                         dateInput = dateInput,
                         context = context,
                         isTodoExpanded = isTodoExpanded,
-                        editingItem = editingItem
+                        editingItem = editingItem,
+                        pickerDateInitialValue = pickerDateInitialValue
                     )
                 }
             ) {

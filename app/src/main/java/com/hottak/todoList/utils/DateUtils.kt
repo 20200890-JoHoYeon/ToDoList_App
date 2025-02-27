@@ -35,3 +35,9 @@ fun getTodayDay(): String {
     return currentDate.dayOfMonth.toString().padStart(2, '0') // 월이 1자리일 경우 0을 추가
 }
 
+// 1일 반환 함수 (형식: dd)
+@RequiresApi(Build.VERSION_CODES.O)
+fun getFirstDay(): String {
+    val date = 1
+    return date.toString().padStart(2, '0') // 월이 1자리일 경우 0을 추가
+}
