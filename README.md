@@ -4,7 +4,7 @@
 # development stack :question:
 
 Front-End: Kotlin <br />
-Back-End: Kotlin
+Back-End: Kotlin <br />
 Database: Room
 
 # ToDoList_App Project Results :exclamation:
@@ -35,7 +35,13 @@ It's a web page that's actually being distributed, and the second additional dev
 ## Footer :exclamation:
 
 Click [here](https://web.wonnytopper.co.kr/) to visit my project.-->
-![이미지](https://github.com/user-attachments/assets/fac7168b-2da7-4276-9b9e-7d6ce6e1497b)
+
+## Version 1.0
+![이미지 1](https://github.com/user-attachments/assets/e18fd4e3-9c90-4a5d-aa5a-9482e90e8056)
+## Version 2.0
+![이미지 2](https://github.com/user-attachments/assets/31a3c3a8-7fcf-4313-bbfd-ed720468a701)
 
 Finally, I will register a photo showing the progress of the project. Thank you for your review. 😘
+
+## source
 사용한 logo, icon, img 출처 <a href="https://www.freepik.com/sticker/planner_8764762">Icon by bukeicon</a>
