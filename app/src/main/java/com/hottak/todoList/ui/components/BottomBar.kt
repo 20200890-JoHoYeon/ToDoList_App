@@ -21,6 +21,7 @@ import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.utils.getButtonColors
 import com.hottak.todoList.utils.handleButtonClick
+import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -33,7 +34,8 @@ fun BottomBar(
     editingItem: MutableState<ItemData?>,
     viewModel: ItemViewModel,
     dateInput: MutableState<String>,
-    pickerDateInitialValue: MutableState<String>
+    pickerDateInitialValue: MutableState<String>,
+    currentDate: MutableState<LocalDate>
 
 ) {
     BottomAppBar(
@@ -58,6 +60,7 @@ fun BottomBar(
                         context = context,
                         isTodoExpanded = isTodoExpanded,
                         editingItem = editingItem,
+                        currentDate = currentDate,
                         pickerDateInitialValue = pickerDateInitialValue
                     )
                 }

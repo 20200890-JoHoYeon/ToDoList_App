@@ -118,20 +118,18 @@ fun Page1ListScreen() {
     //dateInput 비어있는 경우 오늘 날짜로 초기화
     if (dateInput.value.isEmpty()) {
         val currentDateTime = LocalDateTime.now()
-
         dateInput.value = currentDateTime.format(formatter)
     }
+
     Log.d("test", "초기dateInput: ${dateInput.value}")
     val pickerDate = remember { mutableStateOf(LocalDateTime.now()) }
-    //날짜별 필터링 변환 시 데이트 피커의 초기값 매칭용 변수
+    //월별 필터링 변환 시 데이트 피커의 초기값 매칭용 변수
     //날짜 설정 후 아이템 생성 시 해당 값 데이트 피커 초기값 유지
     val pickerDateInitialValue = remember { mutableStateOf("") }
     // 현재 년월 상태
     val currentDate = remember {
         mutableStateOf(LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getFirstDay().toInt()))
     }
-    val year = currentDate.value.year
-    val month = currentDate.value.monthValue
     // 날짜를 변경하는 함수
     val updateYearMonth: (Int) -> Unit = { offset ->
         currentDate.value = currentDate.value.plusMonths(offset.toLong())
@@ -152,14 +150,14 @@ fun Page1ListScreen() {
     val filteredItems = items.filter { item ->
         val itemDate = LocalDateTime.parse(item.date, formatter)
         val itemYearMonth = YearMonth.from(itemDate)
-        itemYearMonth.year == year && itemYearMonth.monthValue == month
+        itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
     }.toMutableStateList()
 
     // 필터링된 완료된 할 일 목록
     val filteredCompletionItems = completionItems.filter { item ->
         val itemDate = LocalDateTime.parse(item.date, formatter)
         val itemYearMonth = YearMonth.from(itemDate)
-        itemYearMonth.year == year && itemYearMonth.monthValue == month
+        itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
     }.toMutableStateList()
 
 
@@ -191,7 +189,8 @@ fun Page1ListScreen() {
                 isTodoExpanded = isTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem,
-                pickerDateInitialValue=pickerDateInitialValue,
+                currentDate = currentDate,
+                pickerDateInitialValue = pickerDateInitialValue,
             )
         },
         content = { innerPadding ->

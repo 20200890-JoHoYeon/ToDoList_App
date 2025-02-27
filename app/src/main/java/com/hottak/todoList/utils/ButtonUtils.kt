@@ -16,6 +16,9 @@ import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.toItem
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 // 상황별 버튼 색깔을 반환하는 함수
 @Composable
@@ -43,7 +46,8 @@ fun handleButtonClick(
     editingItem: MutableState<ItemData?>,
     viewModel: ItemViewModel,
     dateInput: MutableState<String>,
-    pickerDateInitialValue: MutableState<String>
+    pickerDateInitialValue: MutableState<String>,
+    currentDate: MutableState<LocalDate>
 ) {
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
@@ -70,6 +74,14 @@ fun handleButtonClick(
             viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem())
             Log.d("test", "insert items")
             pickerDateInitialValue.value = dateInput.value
+
+            //날짜 설정 후 아이템 생성 시 월별 필터링 해당월로 이동하도록 currentDate 값 매칭 코드
+            val shortDate = dateInput.value.split(" ")[0]
+            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd")
+            currentDate.value = LocalDate.parse(shortDate, formatter)
+            Log.d("test", "localDateTime: $shortDate")
+            Log.d("test", "current: ${currentDate.value}")
+
             textInput.value = ""
             userInput.value = ""
             Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
