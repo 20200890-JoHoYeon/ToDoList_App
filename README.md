@@ -32,13 +32,15 @@ localhost:3000/admin/index
 Cotlin Learning Toy Project ToDoList App, which was conducted by the company before the new training
 
 ## Footer :exclamation:
--->
+
 Click [here]( ) to visit my project.
 
-## Version 1.0
-![이미지 1](https://github.com/user-attachments/assets/e18fd4e3-9c90-4a5d-aa5a-9482e90e8056)
+## Version 2.4
+![이미지 3](https://github.com/user-attachments/assets/3c782201-09b1-4e7b-a943-b7ca0a9b138f)
 ## Version 2.0
 ![이미지 2](https://github.com/user-attachments/assets/31a3c3a8-7fcf-4313-bbfd-ed720468a701)
+## Version 1.0
+![이미지 1](https://github.com/user-attachments/assets/e18fd4e3-9c90-4a5d-aa5a-9482e90e8056)
 
 Finally, I will register a photo showing the progress of the project. Thank you for your review. 😘
 
