@@ -17,7 +17,6 @@ import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.toItem
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 // 상황별 버튼 색깔을 반환하는 함수

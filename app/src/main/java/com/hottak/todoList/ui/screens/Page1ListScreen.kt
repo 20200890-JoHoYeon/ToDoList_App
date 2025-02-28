@@ -96,6 +96,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -130,12 +131,24 @@ fun Page1ListScreen() {
     val currentDate = remember {
         mutableStateOf(LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getFirstDay().toInt()))
     }
+
+    // 상태 변수
+    val isTodoExpanded = remember { mutableStateOf(false) }//진행중인 리스트 아코디언
+    val isCompletedTodoExpanded = remember { mutableStateOf(false) }//완료된 리스트 아코디언
+    val isEditing = remember { mutableStateOf(false) }//수정모드 구분자
+    val editingItem = remember { mutableStateOf<ItemData?>(null) }//수정모드 대상 아이템
+    val editingItemdate = remember { mutableStateOf<String?>(null) }//수정모드 대상 아이템 날짜
+    val isDatePickerVisible =  remember { mutableStateOf(false) }//상단 년월 필터링 설정픽커 구분자
+
+
     // 날짜를 변경하는 함수
     val updateYearMonth: (Int) -> Unit = { offset ->
         currentDate.value = currentDate.value.plusMonths(offset.toLong())
         val dateTime = LocalDateTime.of(currentDate.value, LocalTime.MIDNIGHT)
         dateInput.value = dateTime.format(formatter)
-        pickerDateInitialValue.value = dateInput.value
+        if (!isEditing.value) {
+            pickerDateInitialValue.value = dateInput.value
+        }
     }
 
     // 데이터베이스에서 가져온 모든 아이템 (ItemData로 변환)
@@ -160,18 +173,10 @@ fun Page1ListScreen() {
         itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
     }.toMutableStateList()
 
-
     Log.d("test", "투두 페이지 진입")
     Log.d("test", "allItems 데이터베이스에서 가져온 아이템 아이템데이터 타입으로 변환: $allItems")
     Log.d("test", "진행중인 items 항목:${items},  ${items.toList()}")
     Log.d("test", "완료된 items 항목:${completionItems},  ${completionItems.toList()}")
-
-    // 상태 변수
-    val isTodoExpanded = remember { mutableStateOf(false) }//진행중인 리스트 아코디언
-    val isCompletedTodoExpanded = remember { mutableStateOf(false) }//완료된 리스트 아코디언
-    val isEditing = remember { mutableStateOf(false) }//수정모드 구분자
-    val editingItem = remember { mutableStateOf<ItemData?>(null) }//수정모드 대상 아이템
-    val isDatePickerVisible =  remember { mutableStateOf(false) }//상단 년월 필터링 설정픽커 구분자
 
     Scaffold(
         containerColor = Color.White,
@@ -207,11 +212,13 @@ fun Page1ListScreen() {
                 isCompletedTodoExpanded = isCompletedTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem,
+                editingItemdate = editingItemdate,
                 isDatePickerVisible = isDatePickerVisible,
                 currentDate = currentDate,
                 updateYearMonth = updateYearMonth,
                 pickerDate=pickerDate,
                 pickerDateInitialValue=pickerDateInitialValue
+
             )
         }
     )
@@ -238,6 +245,7 @@ fun PageContent(
     pickerDate: MutableState<LocalDateTime>,
     isDatePickerVisible: MutableState<Boolean>,
     pickerDateInitialValue: MutableState<String>,
+    editingItemdate: MutableState<String?>,
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -258,14 +266,25 @@ fun PageContent(
         return yearMonth.format(DateTimeFormatter.ofPattern("yyyy년 MM월"))
     }
 
-
     val openDateTimePickerDialog: () -> Unit = {
-        // pickerDateInitialValue가 존재하면 이를 사용하고, 없으면 현재 시간 사용,
-        // 날짜 설정 후 아이템 생성 시 해당 값 데이트 피커 초기값 유지
+        val currentYear = LocalDate.now().year
+        val minCalendar = Calendar.getInstance().apply {
+            set(currentYear - 50, Calendar.JANUARY, 1) // 최소 연도 설정 (현재 연도 - 50년)
+        }
+        val maxCalendar = Calendar.getInstance().apply {
+            set(currentYear + 10, Calendar.DECEMBER, 31) // 최대 연도 설정 (현재 연도 + 10년)
+        }
+
         val initialDateTime = try {
-            pickerDateInitialValue.value.let {
-                LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss"))
-            } ?: LocalDateTime.now()
+            if (isEditing.value) {
+                editingItemdate.value.let {
+                    LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss"))
+                }
+            } else {
+                pickerDateInitialValue.value.let {
+                    LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss"))
+                } ?: LocalDateTime.now()
+            }
         } catch (e: Exception) {
             LocalDateTime.now()
         }
@@ -311,8 +330,13 @@ fun PageContent(
             day
         )
 
+        // 최소 및 최대 날짜 설정
+        datePicker.datePicker.minDate = minCalendar.timeInMillis
+        datePicker.datePicker.maxDate = maxCalendar.timeInMillis
+
         datePicker.show()
     }
+
 
 
     Column(
@@ -533,13 +557,15 @@ fun PageContent(
                     items(items) { item ->
                         ItemRow(
                             item = item,
+                            isInProgress = true,
                             isEditing = isEditing,
                             editingItem = editingItem,
-                            isInProgress = true,
-                            onDelete = onDeleteItem,
                             onCheckedChange = { checked, itemData ->
                                 handleCheckedChange(checked, itemData, true)
-                            }
+                            },
+                            onDelete = onDeleteItem,
+                            dateInput = dateInput,
+                            editingItemdate = editingItemdate
                         )
                     }
                 }
@@ -605,13 +631,15 @@ fun PageContent(
                     items(completionItems) { item ->
                         ItemRow(
                             item = item,
+                            isInProgress = false,
                             isEditing = isEditing,
                             editingItem = editingItem,
-                            isInProgress = false,
-                            onDelete = onDeleteItem,
                             onCheckedChange = { checked, itemData ->
                                 handleCheckedChange(checked, itemData, false)
-                            }
+                            },
+                            onDelete = onDeleteItem,
+                            dateInput = dateInput,
+                            editingItemdate = editingItemdate,
 
                         )
                     }
@@ -663,7 +691,9 @@ fun ItemRow(
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
     onCheckedChange: (Boolean, ItemData) -> Unit,
-    onDelete: (ItemData) -> Unit
+    onDelete: (ItemData) -> Unit,
+    dateInput: MutableState<String>,
+    editingItemdate: MutableState<String?>
 ) {
 
     val showPopup = remember { mutableStateOf(false) } // 팝업 상태 관리
@@ -727,7 +757,12 @@ fun ItemRow(
             Row {
                 IconButton(
                     modifier = Modifier.size(40.dp), // 정사각형 크기 설정
-                    onClick = { isEditing.value = true; editingItem.value = item }
+                    onClick = {
+                        isEditing.value = true
+                        editingItem.value = item
+                        dateInput.value = item.date
+                        editingItemdate.value = item.date
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Create,
@@ -864,19 +899,17 @@ fun YearMonthPickerBottomSheet(
         }
     }
 }
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun <T> ExposedDropdownMenuBox(
+fun ExposedDropdownMenuBox(
     label: String,
-    options: List<T>,
-    selectedOption: T,
-    onOptionSelected: (T) -> Unit
+    options: List<Int>,
+    selectedOption: Int, // 현재 선택된 옵션
+    onOptionSelected: (Int) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-    ) {
+    Column {
         Text(label, fontSize = 14.sp, color = Color.Gray)
         Box(
             modifier = Modifier
@@ -885,7 +918,11 @@ fun <T> ExposedDropdownMenuBox(
                 .clickable { expanded = true }
                 .padding(16.dp)
         ) {
-            Text(selectedOption.toString(), fontSize = 20.sp)
+            Text(
+                selectedOption.toString(),
+                fontSize = 20.sp,
+                color = Color.Black
+            )
         }
 
         DropdownMenu(
@@ -893,9 +930,15 @@ fun <T> ExposedDropdownMenuBox(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth()
         ) {
-            options.forEach { option ->
+            options.reversed().forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option.toString(), fontSize = 14.sp) },
+                    text = {
+                        Text(
+                            option.toString(),
+                            fontSize = 14.sp,
+                            color = if (option == selectedOption) colorResource(R.color.todo_date_blue) else Color.Black
+                        )
+                    },
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
