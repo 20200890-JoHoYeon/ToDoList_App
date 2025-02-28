@@ -15,27 +15,38 @@ import com.hottak.todoList.ui.theme.MyApplicationTheme
 import com.hottak.todoList.ui.screens.HomeScreen
 import com.hottak.todoList.ui.screens.Page1ListScreen
 import com.hottak.todoList.ui.screens.Page2GalleryScreen
-import com.hottak.todoList.ui.screens.Page3HelloScreen
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose와 함께 사용할 수 있도록 제공되는 Activity의 확장 클래스
+
+class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCreate(savedInstanceState: Bundle?) {//onCreate는 액티비티가 처음 생성될 때 호출되는 메서드 super.onCreate(savedInstanceState)를 호출
-        super.onCreate(savedInstanceState)//부모 클래스의 기본 동작을 수행
-        enableEdgeToEdge() //안드로이드 시스템 바(edge-to-edge) 적용(화면을 전체화면으로 설정, 네비게이션 바 및 상태 바를 투명하게 만들고 앱 UI가 화면 끝까지 차지)
-        setContent { //Compose UI를 렌더링하는 영역
-            MyApplicationTheme {//애플리케이션의 테마를 적용하는 래퍼 함수로, 앱의 전체 스타일을 지정
-                val navController = rememberNavController() // 네비게이션 컨트롤러를 생성하여 화면 전환을 관리
-                NavHost(//네비게이션 그래프를 정의하고, 화면 간 이동을 가능하게 함
-                    navController = navController,
-                    startDestination = "home"//앱이 실행될 때 "home" (HomeScreen) 부터 시작.
-                ) {
-                    composable("home") { HomeScreen(navController) }//"home" 경로로 이동하면 HomeScreen이 표시됨.
-                    composable("page1") { Page1ListScreen(navController) }//"page1" 경로로 이동하면 Page1ListScreen이 표시됨.
-                    composable("page2") { Page2GalleryScreen(navController) }//"page2" 경로로 이동하면 Page2GalleryScreen이 표시됨.
-                    //composable("page3") { Page3HelloScreen(navController) }//"page3" 경로로 이동하면 Page3HelloScreen이 표시됨.
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MyApplicationTheme {
+                val navController = rememberNavController()
+
+                NavHost(navController = navController, startDestination = "home") {
+                    composable("home") { HomeScreen(navController) }
+                    composable("page1/{date}") { backStackEntry ->
+                        val page2MoveItemDate = backStackEntry.arguments?.getString("date") ?: "defaultDate"
+                        Page1ListScreen(navController, page2MoveItemDate)
+                    }
+                    composable("page2") { Page2GalleryScreen(navController) }
                 }
             }
         }
+    }
+
+    // 🔹 현재 날짜 및 시간을 포맷팅 후 URL Encoding 적용
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getEncodedCurrentDate(): String {
+        val todayDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        return URLEncoder.encode(todayDateTime, StandardCharsets.UTF_8.toString())
     }
 }
 
@@ -45,9 +56,11 @@ class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose
 @Composable
 fun HomeScreenPreview() {
     val navController = rememberNavController() // NavController 생성
+    val todayDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) // 오늘 날짜 및 시간
+    val encodedDate = URLEncoder.encode(todayDateTime, StandardCharsets.UTF_8.toString())
     MyApplicationTheme {
         HomeScreen(navController) // NavController 전달
-        Page1ListScreen(navController) // NavController 전달
+        Page1ListScreen(navController , page2MoveItemDate = encodedDate) // NavController 전달
         Page2GalleryScreen(navController) // NavController 전달
         //Page3HelloScreen(navController) // NavController 전달
     }

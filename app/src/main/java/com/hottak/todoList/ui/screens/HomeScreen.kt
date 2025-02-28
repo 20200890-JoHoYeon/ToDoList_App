@@ -1,5 +1,7 @@
 package com.hottak.todoList.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,6 +34,7 @@ fun HomeScreenPreview() {
     HomeScreen(navController = navController)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController) {
     Scaffold(

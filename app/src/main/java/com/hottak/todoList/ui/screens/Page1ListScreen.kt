@@ -88,6 +88,8 @@ import com.hottak.todoList.ui.components.TopBar
 import com.hottak.todoList.utils.getFirstDay
 import com.hottak.todoList.utils.getTodayMonth
 import com.hottak.todoList.utils.getTodayYear
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -98,7 +100,7 @@ import java.util.Calendar
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Page1ListScreen(navController: NavController,) {
+fun Page1ListScreen(navController: NavController, page2MoveItemDate: String) {
     // 기본 설정
     val context = LocalContext.current
     val appContext = context.applicationContext as Application
@@ -124,8 +126,26 @@ fun Page1ListScreen(navController: NavController,) {
     //날짜 설정 후 아이템 생성 시 해당 값 데이트 피커 초기값 유지
     val pickerDateInitialValue = remember { mutableStateOf("") }
     // 현재 년월 상태
+
     val currentDate = remember {
-        mutableStateOf(LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getFirstDay().toInt()))
+        mutableStateOf(
+            try {
+                // 1. URL 디코딩  page2MoveItemDate = 25-04-28+06%3A33%3A37 형식
+                val decodedDate = URLDecoder.decode(page2MoveItemDate, StandardCharsets.UTF_8.toString())
+
+                // 2. "+"를 공백으로 변환 (시간 부분 처리)
+                val formattedDate = decodedDate.replace("+", " ")
+
+                // 3. LocalDateTime으로 변환
+                val parsedDateTime = LocalDateTime.parse(formattedDate, formatter)
+
+                // 4. LocalDate만 추출
+                parsedDateTime.toLocalDate()
+            } catch (e: Exception) {
+                // 변환 실패 시 기본 날짜 사용
+                LocalDate.of(getTodayYear().toInt(), getTodayMonth().toInt(), getFirstDay().toInt())
+            }
+        )
     }
 
     // 상태 변수
@@ -139,6 +159,7 @@ fun Page1ListScreen(navController: NavController,) {
 
     // 날짜를 변경하는 함수
     val updateYearMonth: (Int) -> Unit = { offset ->
+
         currentDate.value = currentDate.value.plusMonths(offset.toLong())
         val dateTime = LocalDateTime.of(currentDate.value, LocalTime.now())
         dateInput.value = dateTime.format(formatter)
@@ -686,6 +707,7 @@ fun DeleteAlertDialog(
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ItemRow(
     item: ItemData,

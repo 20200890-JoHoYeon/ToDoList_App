@@ -1,5 +1,8 @@
 package com.hottak.todoList.ui.components
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.hottak.todoList.model.ItemData
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 
 @Composable
 fun ItemPopup(
@@ -57,8 +65,11 @@ fun ItemPopup(
                     Button(
                         onClick = {
                             onDismiss() // 팝업 닫기
-                            navController.navigate("page1") // Page1으로 이동
-                            //navController.navigate("page1/${item.id}") // Page1으로 이동
+                            //navController.navigate("page1") // Page1으로 이동
+                            val encodedDate = URLEncoder.encode(item.date, StandardCharsets.UTF_8.toString()) // URL Encoding 적용
+                            Log.d("encodedDate", encodedDate)
+                            //25-04-28+06%3A33%3A37 형식
+                            navController.navigate("page1/$encodedDate") // 안전하게 날짜 전달
                         }
                     ) {
                         Text("이동")
