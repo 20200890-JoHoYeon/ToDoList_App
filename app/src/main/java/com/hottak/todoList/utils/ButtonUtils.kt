@@ -61,6 +61,8 @@ fun handleButtonClick(
             isEditing.value = false
             editingItem.value = null
             Log.d("test", "Updated items: $item")
+            textInput.value = ""
+            userInput.value = ""
             Toast.makeText(context, "ToDo가 수정되었습니다.", Toast.LENGTH_SHORT).show()
         }
         if (userInput.value.isEmpty()) {
