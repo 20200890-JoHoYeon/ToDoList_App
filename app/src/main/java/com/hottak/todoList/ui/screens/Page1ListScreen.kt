@@ -137,7 +137,7 @@ fun Page1ListScreen() {
     val isCompletedTodoExpanded = remember { mutableStateOf(false) }//완료된 리스트 아코디언
     val isEditing = remember { mutableStateOf(false) }//수정모드 구분자
     val editingItem = remember { mutableStateOf<ItemData?>(null) }//수정모드 대상 아이템
-    val editingItemdate = remember { mutableStateOf<String?>(null) }//수정모드 대상 아이템 날짜
+    val editingItemDate = remember { mutableStateOf<String?>(null) }//수정모드 대상 아이템 날짜
     val isDatePickerVisible =  remember { mutableStateOf(false) }//상단 년월 필터링 설정픽커 구분자
 
 
@@ -212,7 +212,7 @@ fun Page1ListScreen() {
                 isCompletedTodoExpanded = isCompletedTodoExpanded,
                 isEditing = isEditing,
                 editingItem = editingItem,
-                editingItemdate = editingItemdate,
+                editingItemDate = editingItemDate,
                 isDatePickerVisible = isDatePickerVisible,
                 currentDate = currentDate,
                 updateYearMonth = updateYearMonth,
@@ -245,7 +245,7 @@ fun PageContent(
     pickerDate: MutableState<LocalDateTime>,
     isDatePickerVisible: MutableState<Boolean>,
     pickerDateInitialValue: MutableState<String>,
-    editingItemdate: MutableState<String?>,
+    editingItemDate: MutableState<String?>,
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -277,7 +277,7 @@ fun PageContent(
 
         val initialDateTime = try {
             if (isEditing.value) {
-                editingItemdate.value.let {
+                editingItemDate.value.let {
                     LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yy-MM-dd HH:mm:ss"))
                 }
             } else {
@@ -337,8 +337,6 @@ fun PageContent(
         datePicker.show()
     }
 
-
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -346,11 +344,6 @@ fun PageContent(
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        LaunchedEffect(editingItem.value) {
-            userInput.value = editingItem.value?.title ?: ""
-            textInput.value = editingItem.value?.content ?: ""
-            dateInput.value = editingItem.value?.date ?: ""
-        }
         // 년월 표시 Row
         Row(
             modifier = Modifier
@@ -390,7 +383,10 @@ fun PageContent(
         if (isDatePickerVisible.value) {
             YearMonthPickerBottomSheet(
                 currentDate = currentDate.value,
-                onDateSelected = { selectedDate -> currentDate.value = selectedDate },
+                onDateSelected = {
+                    selectedDate -> currentDate.value = selectedDate
+                    updateYearMonth(0)
+                },
                 onDismiss = { isDatePickerVisible.value = false }
             )
         }
@@ -565,7 +561,9 @@ fun PageContent(
                             },
                             onDelete = onDeleteItem,
                             dateInput = dateInput,
-                            editingItemdate = editingItemdate
+                            editingItemDate = editingItemDate,
+                            userInput = userInput,
+                            textInput = textInput
                         )
                     }
                 }
@@ -638,8 +636,11 @@ fun PageContent(
                                 handleCheckedChange(checked, itemData, false)
                             },
                             onDelete = onDeleteItem,
+                            userInput = userInput,
+                            textInput = textInput,
                             dateInput = dateInput,
-                            editingItemdate = editingItemdate,
+                            editingItemDate = editingItemDate,
+
 
                         )
                     }
@@ -693,7 +694,9 @@ fun ItemRow(
     onCheckedChange: (Boolean, ItemData) -> Unit,
     onDelete: (ItemData) -> Unit,
     dateInput: MutableState<String>,
-    editingItemdate: MutableState<String?>
+    editingItemDate: MutableState<String?>,
+    userInput: MutableState<String>,
+    textInput: MutableState<String>
 ) {
 
     val showPopup = remember { mutableStateOf(false) } // 팝업 상태 관리
@@ -761,7 +764,10 @@ fun ItemRow(
                         isEditing.value = true
                         editingItem.value = item
                         dateInput.value = item.date
-                        editingItemdate.value = item.date
+                        editingItemDate.value = item.date
+                        userInput.value = editingItem.value?.title ?: ""
+                        textInput.value = editingItem.value?.content ?: ""
+                        dateInput.value = editingItem.value?.date ?: ""
                     }
                 ) {
                     Icon(
@@ -948,3 +954,4 @@ fun ExposedDropdownMenuBox(
         }
     }
 }
+
