@@ -1,5 +1,6 @@
 package com.hottak.todoList.ui.screens
 
+import com.hottak.todoList.ui.components.ItemPopup
 import android.annotation.SuppressLint
 import android.app.Application
 import android.app.DatePickerDialog
@@ -20,17 +21,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -54,7 +52,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -76,10 +73,10 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
@@ -100,9 +97,8 @@ import java.util.Calendar
 
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
-@Preview
 @Composable
-fun Page1ListScreen() {
+fun Page1ListScreen(navController: NavController,) {
     // 기본 설정
     val context = LocalContext.current
     val appContext = context.applicationContext as Application
@@ -144,7 +140,7 @@ fun Page1ListScreen() {
     // 날짜를 변경하는 함수
     val updateYearMonth: (Int) -> Unit = { offset ->
         currentDate.value = currentDate.value.plusMonths(offset.toLong())
-        val dateTime = LocalDateTime.of(currentDate.value, LocalTime.MIDNIGHT)
+        val dateTime = LocalDateTime.of(currentDate.value, LocalTime.now())
         dateInput.value = dateTime.format(formatter)
         if (!isEditing.value) {
             pickerDateInitialValue.value = dateInput.value
@@ -216,8 +212,9 @@ fun Page1ListScreen() {
                 isDatePickerVisible = isDatePickerVisible,
                 currentDate = currentDate,
                 updateYearMonth = updateYearMonth,
-                pickerDate=pickerDate,
-                pickerDateInitialValue=pickerDateInitialValue
+                pickerDate = pickerDate,
+                pickerDateInitialValue = pickerDateInitialValue,
+                navController = navController
 
             )
         }
@@ -246,6 +243,7 @@ fun PageContent(
     isDatePickerVisible: MutableState<Boolean>,
     pickerDateInitialValue: MutableState<String>,
     editingItemDate: MutableState<String?>,
+    navController: NavController,
 ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
@@ -563,7 +561,9 @@ fun PageContent(
                             dateInput = dateInput,
                             editingItemDate = editingItemDate,
                             userInput = userInput,
-                            textInput = textInput
+                            textInput = textInput,
+                            navController = navController
+
                         )
                     }
                 }
@@ -636,10 +636,11 @@ fun PageContent(
                                 handleCheckedChange(checked, itemData, false)
                             },
                             onDelete = onDeleteItem,
-                            userInput = userInput,
-                            textInput = textInput,
                             dateInput = dateInput,
                             editingItemDate = editingItemDate,
+                            userInput = userInput,
+                            textInput = textInput,
+                            navController = navController,
 
 
                         )
@@ -696,7 +697,8 @@ fun ItemRow(
     dateInput: MutableState<String>,
     editingItemDate: MutableState<String?>,
     userInput: MutableState<String>,
-    textInput: MutableState<String>
+    textInput: MutableState<String>,
+    navController: NavController
 ) {
 
     val showPopup = remember { mutableStateOf(false) } // 팝업 상태 관리
@@ -796,29 +798,11 @@ fun ItemRow(
     }
 
     if (showPopup.value) {
-        AlertDialog(
-            onDismissRequest = { showPopup.value = false },
-            title = { Text(text = item.title, fontWeight = FontWeight.Bold) },
-            text = {
-                Box(
-                    modifier = Modifier
-                        .heightIn(min = 100.dp, max = 300.dp) // 최소 높이 & 최대 높이 설정
-                        .verticalScroll(rememberScrollState()) // 스크롤 가능하도록 설정
-                ) {
-                    Column {
-                        Text(text = item.content, fontSize = 14.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "날짜: ${item.date}", fontSize = 12.sp, color = Color.Gray)
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = { showPopup.value = false }
-                ) {
-                    Text("닫기")
-                }
-            }
+
+        ItemPopup(
+            item = item,
+            onDismiss = { showPopup.value = false },
+            navController = navController
         )
     }
 }

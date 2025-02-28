@@ -30,9 +30,9 @@ class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose
                     startDestination = "home"//앱이 실행될 때 "home" (HomeScreen) 부터 시작.
                 ) {
                     composable("home") { HomeScreen(navController) }//"home" 경로로 이동하면 HomeScreen이 표시됨.
-                    composable("page1") { Page1ListScreen() }//"page1" 경로로 이동하면 Page1ListScreen이 표시됨.
-                    composable("page2") { Page2GalleryScreen() }//"page2" 경로로 이동하면 Page2GalleryScreen이 표시됨.
-                    composable("page3") { Page3HelloScreen() }//"page3" 경로로 이동하면 Page3HelloScreen이 표시됨.
+                    composable("page1") { Page1ListScreen(navController) }//"page1" 경로로 이동하면 Page1ListScreen이 표시됨.
+                    composable("page2") { Page2GalleryScreen(navController) }//"page2" 경로로 이동하면 Page2GalleryScreen이 표시됨.
+                    //composable("page3") { Page3HelloScreen(navController) }//"page3" 경로로 이동하면 Page3HelloScreen이 표시됨.
                 }
             }
         }
@@ -40,11 +40,15 @@ class MainActivity : ComponentActivity() {//ComponentActivity는 Jetpack Compose
 }
 
 //모킹
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     val navController = rememberNavController() // NavController 생성
     MyApplicationTheme {
         HomeScreen(navController) // NavController 전달
+        Page1ListScreen(navController) // NavController 전달
+        Page2GalleryScreen(navController) // NavController 전달
+        //Page3HelloScreen(navController) // NavController 전달
     }
 }

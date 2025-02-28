@@ -65,12 +65,10 @@ fun HomeScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(36.dp))
                 LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
 //            Spacer(modifier = Modifier.height(8.dp))
-//            LargeBlackButton(navController, "Gallery", "page2", Modifier.width(250.dp))
-//            Spacer(modifier = Modifier.height(8.dp))
-//            LargeBlackButton(navController, "Hello", "page3", Modifier.width(250.dp))
-
-
+//            LargeBlackButton(navController, "Hello", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
             }
         }
     )

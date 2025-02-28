@@ -9,12 +9,14 @@ import kotlinx.coroutines.launch
 class ItemViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ItemRepository
 
+    val all: LiveData<List<ItemData>>
     val allItems: LiveData<List<ItemData>>
     val allCompletedItems: LiveData<List<ItemData>>
 
     init {
         val itemDao = AppDatabase.getDatabase(application).itemDao()
         repository = ItemRepository(itemDao)
+        all = repository.all
         allItems = repository.allItems
         allCompletedItems = repository.allCompletedItems
     }

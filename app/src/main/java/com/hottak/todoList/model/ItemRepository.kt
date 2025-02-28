@@ -4,6 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 
 class ItemRepository(private val itemDao: ItemDao) {
+
+    val all: LiveData<List<ItemData>> = itemDao.getAll().map { list ->
+        list.map { it.toItemData() }
+    }
+
     val allItems: LiveData<List<ItemData>> = itemDao.getAllItems().map { list ->
         list.map { it.toItemData() }
     }

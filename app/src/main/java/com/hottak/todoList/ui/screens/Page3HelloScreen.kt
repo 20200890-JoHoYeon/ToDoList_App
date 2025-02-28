@@ -16,11 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.hottak.todoList.ui.components.TopBar
 
 @Preview//@Preview 주석이 달린 구성 가능한 함수를 사용하여 UI를 미리보기
 @Composable//@Composable이라는 주석이 달린 일반 함수입니다. 이 함수는 UI 요소를 반환
-fun Page3HelloScreen() {
+fun Page3HelloScreen(navController: NavHostController) {
     Scaffold(
         containerColor = Color.White,
         modifier = Modifier.fillMaxSize().background(color = Color.White),
