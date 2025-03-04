@@ -16,6 +16,7 @@ import com.hottak.todoList.ui.screens.HomeScreen
 import com.hottak.todoList.ui.screens.Page1ListScreen
 import com.hottak.todoList.ui.screens.Page2GalleryScreen
 import com.hottak.todoList.ui.screens.Page3SettingScreen
+//import com.hottak.todoList.ui.screens.Page4VeyrontecScreen
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("page2") { Page2GalleryScreen(navController) }
                     composable("page3") { Page3SettingScreen(navController) }
+                    //composable("page4") { Page4VeyrontecScreen(navController) }
                 }
             }
         }
@@ -58,5 +60,6 @@ fun HomeScreenPreview() {
         Page1ListScreen(navController , page2MoveItemDate = encodedDate) // NavController 전달
         Page2GalleryScreen(navController) // NavController 전달
         Page3SettingScreen(navController) // NavController 전달
+        //Page4VeyrontecScreen(navController) // NavController 전달
     }
 }
