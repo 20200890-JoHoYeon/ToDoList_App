@@ -73,6 +73,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -127,6 +128,26 @@ fun Page1ListScreen(navController: NavController, page2MoveItemDate: String) {
     val pickerDateInitialValue = remember { mutableStateOf("") }
     // 현재 년월 상태
 
+//    val pickerDateInitialValue = remember {
+//        mutableStateOf(
+//            try {
+//                // 1. URL 디코딩  page2MoveItemDate = 25-04-28+06%3A33%3A37 형식
+//                val decodedDate = URLDecoder.decode(page2MoveItemDate, StandardCharsets.UTF_8.toString())
+//
+//                // 2. "+"를 공백으로 변환 (시간 부분 처리)
+//                val formattedDate = decodedDate.replace("+", " ")
+//
+//                // 3. LocalDateTime으로 변환
+//                val parsedDateTime = LocalDateTime.parse(formattedDate, formatter)
+//
+//                // 4. LocalDate만 추출 후 문자열 변환
+//                parsedDateTime.toLocalDate().toString()
+//            } catch (e: Exception) {
+//                "" // 변환 실패 시 빈 문자열 반환
+//            }
+//        )
+//    }
+
     val currentDate = remember {
         mutableStateOf(
             try {
@@ -159,7 +180,6 @@ fun Page1ListScreen(navController: NavController, page2MoveItemDate: String) {
 
     // 날짜를 변경하는 함수
     val updateYearMonth: (Int) -> Unit = { offset ->
-
         currentDate.value = currentDate.value.plusMonths(offset.toLong())
         val dateTime = LocalDateTime.of(currentDate.value, LocalTime.now())
         dateInput.value = dateTime.format(formatter)

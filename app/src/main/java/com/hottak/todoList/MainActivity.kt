@@ -15,6 +15,7 @@ import com.hottak.todoList.ui.theme.MyApplicationTheme
 import com.hottak.todoList.ui.screens.HomeScreen
 import com.hottak.todoList.ui.screens.Page1ListScreen
 import com.hottak.todoList.ui.screens.Page2GalleryScreen
+import com.hottak.todoList.ui.screens.Page3SettingScreen
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -37,16 +38,10 @@ class MainActivity : ComponentActivity() {
                         Page1ListScreen(navController, page2MoveItemDate)
                     }
                     composable("page2") { Page2GalleryScreen(navController) }
+                    composable("page3") { Page3SettingScreen(navController) }
                 }
             }
         }
-    }
-
-    // 🔹 현재 날짜 및 시간을 포맷팅 후 URL Encoding 적용
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun getEncodedCurrentDate(): String {
-        val todayDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        return URLEncoder.encode(todayDateTime, StandardCharsets.UTF_8.toString())
     }
 }
 
@@ -62,6 +57,6 @@ fun HomeScreenPreview() {
         HomeScreen(navController) // NavController 전달
         Page1ListScreen(navController , page2MoveItemDate = encodedDate) // NavController 전달
         Page2GalleryScreen(navController) // NavController 전달
-        //Page3HelloScreen(navController) // NavController 전달
+        Page3SettingScreen(navController) // NavController 전달
     }
 }

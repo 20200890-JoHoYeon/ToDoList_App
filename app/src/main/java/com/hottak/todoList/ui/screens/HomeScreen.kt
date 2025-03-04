@@ -26,6 +26,7 @@ import com.hottak.todoList.R
 import com.hottak.todoList.ui.components.LargeBlackButton
 import com.hottak.todoList.ui.components.LargeMainTitle
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview//@Preview 주석이 달린 구성 가능한 함수를 사용하여 UI를 미리보기
 @Composable
 fun HomeScreenPreview() {
@@ -70,8 +71,8 @@ fun HomeScreen(navController: NavController) {
                 LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
                 Spacer(modifier = Modifier.height(8.dp))
                 LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
-//            Spacer(modifier = Modifier.height(8.dp))
-//            LargeBlackButton(navController, "Hello", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                LargeBlackButton(navController, "SETTING", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
             }
         }
     )

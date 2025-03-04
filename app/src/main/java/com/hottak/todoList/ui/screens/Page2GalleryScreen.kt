@@ -81,7 +81,7 @@ fun GalleryContent(
     val selectedItem = remember { mutableStateOf<ItemData?>(null) }
 
     // 📌 년-월 기준으로 그룹화 ("2025-02" 이런 형식)
-    val groupedItems = all.groupBy { it.date.substring(0, 7) }
+    val groupedItems = all.groupBy { it.date.substring(0, 7) }.toSortedMap(Comparator.reverseOrder()) // 🔥 키(년-월)를 내림차순 정렬
 
     Box(
         Modifier.fillMaxWidth().padding(innerPadding),
