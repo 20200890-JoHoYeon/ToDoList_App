@@ -74,7 +74,7 @@ fun HomeScreen(navController: NavController) {
 //                Spacer(modifier = Modifier.height(8.dp))
 //                LargeBlackButton(navController, "SETTING", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
 //                Spacer(modifier = Modifier.height(8.dp))
-//                LargeBlackButton(navController, "Veyrontec", "page4", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
+//                LargeBlackButton(navController, "READFILE", "page4", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
             }
         }
     )
