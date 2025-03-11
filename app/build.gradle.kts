@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.ksp) // KSP 플러그인 적용 (alias 사용)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -41,10 +42,20 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-auth:18.4.0")
+    implementation(platform(libs.firebase.bom))
+    // Firebase 라이브러리들은 BoM을 사용하므로 버전을 명시하지 않습니다.
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth.ktx) // 버전 제거
+    // Google Play Services Auth는 BoM의 영향을 받지 않으므로 버전 명시 가능
+    implementation(libs.play.services.auth)
+    //androidx.multidex 버전 명시 가능
+    implementation(libs.androidx.multidex)
     implementation (libs.androidx.foundation)
     implementation (libs.material3)
     implementation(libs.kotlin.stdlib.jdk8)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.google.firebase.auth.ktx)
     ksp(libs.symbol.processing.api)
     ksp(libs.androidx.room.common)
     ksp(libs.androidx.room.compiler)

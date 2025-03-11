@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DeviceStreaming">
+    <option name="defaultDeviceApplied" value="true" />
     <option name="deviceSelectionList">
       <list>
         <PersistentDeviceSelectionData>
@@ -14,6 +15,18 @@
           <option name="screenDensity" value="360" />
           <option name="screenX" value="720" />
           <option name="screenY" value="1280" />
+        </PersistentDeviceSelectionData>
+        <PersistentDeviceSelectionData>
+          <option name="api" value="34" />
+          <option name="brand" value="OnePlus" />
+          <option name="codename" value="OP5552L1" />
+          <option name="id" value="OP5552L1" />
+          <option name="labId" value="google" />
+          <option name="manufacturer" value="OnePlus" />
+          <option name="name" value="CPH2415" />
+          <option name="screenDensity" value="480" />
+          <option name="screenX" value="1080" />
+          <option name="screenY" value="2412" />
         </PersistentDeviceSelectionData>
         <PersistentDeviceSelectionData>
           <option name="api" value="34" />
@@ -346,6 +359,18 @@
         </PersistentDeviceSelectionData>
         <PersistentDeviceSelectionData>
           <option name="api" value="34" />
+          <option name="brand" value="samsung" />
+          <option name="codename" value="gts9fe" />
+          <option name="id" value="gts9fe" />
+          <option name="labId" value="google" />
+          <option name="manufacturer" value="Samsung" />
+          <option name="name" value="Galaxy Tab S9 FE 5G" />
+          <option name="screenDensity" value="280" />
+          <option name="screenX" value="1440" />
+          <option name="screenY" value="2304" />
+        </PersistentDeviceSelectionData>
+        <PersistentDeviceSelectionData>
+          <option name="api" value="34" />
           <option name="brand" value="google" />
           <option name="codename" value="husky" />
           <option name="id" value="husky" />
@@ -554,6 +579,6 @@
         </PersistentDeviceSelectionData>
       </list>
     </option>
-    <option name="selectedCloudProject" value="myapplication-eeb4b255" />
+    <option name="selectedCloudProject" value="todolist-7a471" />
   </component>
 </project>
