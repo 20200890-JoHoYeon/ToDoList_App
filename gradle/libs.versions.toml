@@ -21,6 +21,7 @@ roomKtx = "2.6.1"
 symbolProcessingApi = "2.1.0-1.0.29"
 runtimeLivedata = "1.7.8"
 firebaseAuthKtx = "23.2.0"
+media3CommonKtx = "1.5.1"
 
 
 [libraries]
@@ -53,6 +54,7 @@ symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-ap
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCommon" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 google-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

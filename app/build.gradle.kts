@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.kotlin.stdlib.jdk8)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.google.firebase.auth.ktx)
+    implementation(libs.androidx.media3.common.ktx)
     ksp(libs.symbol.processing.api)
     ksp(libs.androidx.room.common)
     ksp(libs.androidx.room.compiler)

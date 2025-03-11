@@ -9,8 +9,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -22,10 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.hottak.todoList.R
 import com.hottak.todoList.ui.components.LargeBlackButton
 import com.hottak.todoList.ui.components.LargeMainTitle
@@ -33,23 +29,19 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.hottak.todoList.ui.components.GoogleSignInButton
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, googleSignInClient: GoogleSignInClient) {
     val auth = FirebaseAuth.getInstance()
     val isUserLoggedIn = remember { mutableStateOf(false) }
 
-    // Google Sign-In 설정
-    val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken("194973229577-ad42kmpbu4bf4c2bthtdk2nsdsv85ihf.apps.googleusercontent.com")
-        .requestEmail()
-        .build()
 
-    val googleSignInClient = GoogleSignIn.getClient(LocalContext.current, googleSignInOptions)
+
 
     // 로그인 성공 처리
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
@@ -135,6 +127,8 @@ fun HomeScreen(navController: NavController) {
                     LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                     Spacer(modifier = Modifier.height(8.dp))
                     LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LargeBlackButton(navController, "SETTING", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                 }
             }
         }
