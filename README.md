@@ -36,7 +36,7 @@ Cotlin Learning Toy Project ToDoList App, which was conducted by the company bef
 Click [here]( ) to visit my project.
 
 ## Version 3.0
-1. 소셜로그인 <br />
+~~1. 소셜로그인 <br />~~
 2. 클라우드 DB <br />
 3. 마이 페이지 <br />
 4. 설정 페이지 추가 예정
