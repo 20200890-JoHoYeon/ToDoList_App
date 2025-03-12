@@ -927,8 +927,7 @@ fun ExposedDropdownMenuBox(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .clickable { expanded = true }
-                .padding(16.dp)
-                .background(Color(0xFFFAF8FF)),
+                .padding(16.dp),
         ) {
             Text(
                 selectedOption.toString(),
@@ -940,7 +939,7 @@ fun ExposedDropdownMenuBox(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth().background(Color(0xFFFAF8FF)),
+            modifier = Modifier.fillMaxWidth()
         ) {
             options.reversed().forEach { option ->
                 DropdownMenuItem(
