@@ -84,7 +84,8 @@ fun HomeScreen(navController: NavController, googleSignInClient: GoogleSignInCli
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 20.dp),
+                    .padding(bottom = 20.dp)
+                    .background(Color(0xFFFAF8FF)),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -111,17 +112,23 @@ fun HomeScreen(navController: NavController, googleSignInClient: GoogleSignInCli
 
                 Spacer(modifier = Modifier.height(36.dp))
 
-                if(!isUserLoggedIn.value){ // 로그인 상태가 false일 경우 버튼 표시
-                    // 로그인 버튼 추가
-                    GoogleSignInButton(onClick = { signInWithGoogle() }, modifier = Modifier)
+                // 로그인 버튼 추가
+                GoogleSignInButton(
+                    onClick = {
+                        signInWithGoogle()
+                    },
+                    modifier = Modifier
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 로그인 상태가 true일 경우 버튼 표시
+                if (isUserLoggedIn.value) {
+                    LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                }
-                else if (isUserLoggedIn.value) { // 로그인 상태가 true일 경우 버튼 표시
-                    LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
+                    LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LargeBlackButton(navController, "SETTING", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp))
+                    LargeBlackButton(navController, "SETTING", "page3", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                 }
             }
         }
