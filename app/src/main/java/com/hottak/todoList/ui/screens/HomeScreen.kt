@@ -7,16 +7,16 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,18 +30,33 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.ui.components.GoogleSignInButton
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavController, googleSignInClient: GoogleSignInClient) {
+fun HomeScreen(
+    navController: NavController,
+    googleSignInClient: GoogleSignInClient,
+    user: MutableState<FirebaseUser?>
+) {
     val auth = FirebaseAuth.getInstance()
-    val isUserLoggedIn = remember { mutableStateOf(false) }
+    // 로그인 상태 추적
+    val isUserLoggedIn = remember { mutableStateOf(user.value != null) }
 
+    // FirebaseAuth의 상태 변화를 감지하여 user 상태 업데이트
+    DisposableEffect(Unit) {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            user.value = firebaseAuth.currentUser
+            isUserLoggedIn.value = user.value != null
+        }
+        auth.addAuthStateListener(authStateListener)
 
-
+        onDispose {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
 
     // 로그인 성공 처리
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
@@ -52,7 +67,8 @@ fun HomeScreen(navController: NavController, googleSignInClient: GoogleSignInCli
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        val user = auth.currentUser
+                        user.value = auth.currentUser
+                        Log.d("GoogleSignIn", "user.value ${user.value}")
                         Log.d("GoogleSignIn", "signInWithCredential:success")
                         isUserLoggedIn.value = true // 로그인 성공시 상태 변경
                     } else {
