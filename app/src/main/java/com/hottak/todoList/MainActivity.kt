@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -74,13 +75,16 @@ fun HomeScreenPreview() {
     val navController = rememberNavController() // NavController 생성
     val todayDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) // 오늘 날짜 및 시간
     val encodedDate = URLEncoder.encode(todayDateTime, StandardCharsets.UTF_8.toString())
+
+
+    val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(LocalContext.current, GoogleSignInOptions.DEFAULT_SIGN_IN)
     MyApplicationTheme {
-        HomeScreen(navController, googleSignInClient = TODO()) // NavController 전달
+        HomeScreen(navController, googleSignInClient = googleSignInClient) // NavController 전달
         Page1ListScreen(navController , page2MoveItemDate = encodedDate) // NavController 전달
         Page2GalleryScreen(navController) // NavController 전달
         Page3SettingScreen(
             navController,
-            googleSignInClient = TODO()
+            googleSignInClient = googleSignInClient
         ) // NavController 전달
         Page4ReadFileScreen(navController) // NavController 전달
     }

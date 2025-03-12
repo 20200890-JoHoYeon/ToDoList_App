@@ -34,7 +34,6 @@ fun ItemPopup(
     navController: NavController // 네비게이션 컨트롤러 추가
 ) {
     AlertDialog(
-        modifier = Modifier.background(Color(0xFFFAF8FF)),
         onDismissRequest = onDismiss, // 팝업 외부 클릭 시 닫기
         title = { Text(text = item.title, fontWeight = FontWeight.Bold) },
         text = {
