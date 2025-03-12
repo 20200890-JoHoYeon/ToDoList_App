@@ -38,8 +38,7 @@ Click [here]( ) to visit my project.
 ## Version 3.0
 ~~1. 소셜로그인 <br />~~
 2. 클라우드 DB <br />
-3. 마이 페이지 <br />
-4. 설정 페이지 추가 예정
+3. 설정 페이지 추가 예정
 
 ## Version 2.4
 ![이미지 3](https://github.com/user-attachments/assets/3c782201-09b1-4e7b-a943-b7ca0a9b138f)
