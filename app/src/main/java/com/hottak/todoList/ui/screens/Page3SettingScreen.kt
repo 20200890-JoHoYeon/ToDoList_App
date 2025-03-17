@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -53,23 +54,34 @@ fun SettingContent(innerPadding: PaddingValues, navController: NavController, au
             .padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            items((0..2).toList()) { index ->
-                SettingItem(index)
-            }
-        }
+//        LazyColumn(
+//            modifier = Modifier
+//                .weight(1f)
+//        ) {
+//            items((0..2).toList()) { index ->
+//                SettingItem(index)
+//            }
+//        }
 
         // ✅ 로그아웃 버튼을 Column 맨 아래 배치
         Button(
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White,
+                disabledContainerColor = Color.Gray,
+                disabledContentColor = Color.LightGray
+            ),
+            shape = RoundedCornerShape(12.dp),
             onClick = { signOutFromGoogle() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 76.dp, vertical = 16.dp)
         ) {
-            Text("로그아웃")
+            Text(
+                modifier = Modifier.padding(vertical = 4.dp),
+                text="Logout",
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

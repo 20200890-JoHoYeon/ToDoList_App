@@ -21,6 +21,12 @@ class ItemRepository(private val itemDao: ItemDao) {
         itemDao.insert(item)
     }
 
+    // 여러 아이템 삽입
+    suspend fun insertItems(itemsList: List<Item>) {
+        itemDao.insertAll(itemsList) // Room DB에서 여러 아이템을 한 번에 삽입
+    }
+
+
     suspend fun deleteItem(item: Item) {
         itemDao.delete(item)
     }
@@ -28,4 +34,5 @@ class ItemRepository(private val itemDao: ItemDao) {
     suspend fun updateItem(item: Item) {
         itemDao.update(item)
     }
+
 }

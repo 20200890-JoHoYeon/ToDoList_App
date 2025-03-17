@@ -20,16 +20,21 @@ import com.hottak.todoList.ui.screens.Page3SettingScreen
 import com.hottak.todoList.ui.screens.Page4ReadFileScreen
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this) // Firebase가 이미 초기화되지 않았다면 이 줄이 중요합니다.
 
         // ✅ FirebaseAuth 인스턴스 생성
         val auth = FirebaseAuth.getInstance()
+
 
         // ✅ GoogleSignInClient 생성
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -38,20 +43,22 @@ class MainActivity : ComponentActivity() {
             .build()
 
 
+
         val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         setContent {
             MyApplicationTheme {
                 val navController = rememberNavController()
                 val user = remember { mutableStateOf(auth.currentUser) } // 로그인 상태 저장
 
+
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") { HomeScreen(navController,
                         googleSignInClient = googleSignInClient, user) }
                     composable("page1/{date}") { backStackEntry ->
                         val page2MoveItemDate = backStackEntry.arguments?.getString("date") ?: "defaultDate"
-                        Page1ListScreen(navController, page2MoveItemDate)
+                        Page1ListScreen(navController, page2MoveItemDate, user)
                     }
-                    composable("page2") { Page2GalleryScreen(navController) }
+                    composable("page2") { Page2GalleryScreen(navController, user) }
                     composable("page3") { Page3SettingScreen(
                         navController,
                         googleSignInClient = googleSignInClient
@@ -62,6 +69,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 ////모킹
 //@RequiresApi(Build.VERSION_CODES.O)

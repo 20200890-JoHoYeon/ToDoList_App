@@ -17,6 +17,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.utils.getButtonColors
@@ -35,7 +36,8 @@ fun BottomBar(
     viewModel: ItemViewModel,
     dateInput: MutableState<String>,
     pickerDateInitialValue: MutableState<String>,
-    currentDate: MutableState<LocalDate>
+    currentDate: MutableState<LocalDate>,
+    user: MutableState<FirebaseUser?>
 
 ) {
     BottomAppBar(
@@ -61,7 +63,8 @@ fun BottomBar(
                         isTodoExpanded = isTodoExpanded,
                         editingItem = editingItem,
                         currentDate = currentDate,
-                        pickerDateInitialValue = pickerDateInitialValue
+                        pickerDateInitialValue = pickerDateInitialValue,
+                        user = user
                     )
                 }
             ) {

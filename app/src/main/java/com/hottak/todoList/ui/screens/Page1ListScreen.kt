@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
@@ -100,7 +101,11 @@ import java.util.Calendar
 @SuppressLint("NewApi")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Page1ListScreen(navController: NavController, page2MoveItemDate: String) {
+fun Page1ListScreen(
+    navController: NavController,
+    page2MoveItemDate: String,
+    user: MutableState<FirebaseUser?>
+) {
     // 기본 설정
     val context = LocalContext.current
     val appContext = context.applicationContext as Application
@@ -212,6 +217,7 @@ fun Page1ListScreen(navController: NavController, page2MoveItemDate: String) {
                 editingItem = editingItem,
                 currentDate = currentDate,
                 pickerDateInitialValue = pickerDateInitialValue,
+                user = user,
             )
         },
         content = { innerPadding ->
@@ -234,7 +240,8 @@ fun Page1ListScreen(navController: NavController, page2MoveItemDate: String) {
                 updateYearMonth = updateYearMonth,
                 pickerDate = pickerDate,
                 pickerDateInitialValue = pickerDateInitialValue,
-                navController = navController
+                navController = navController,
+                user = user
 
             )
         }
@@ -264,7 +271,9 @@ fun PageContent(
     pickerDateInitialValue: MutableState<String>,
     editingItemDate: MutableState<String?>,
     navController: NavController,
-) {
+    user: MutableState<FirebaseUser?>,
+
+    ) {
     // 삭제 다이얼로그를 위한 변수들
     val showDialog = remember { mutableStateOf(false) }
     val itemToDelete = remember { mutableStateOf<ItemData?>(null) }
@@ -482,6 +491,7 @@ fun PageContent(
                 DeleteAlertDialog(
                     showDialog = showDialog,
                     itemType = itemType,
+                    user = user,
                     itemToDelete = itemToDelete.value!!,
                     viewModel = viewModel,
                     context = context
@@ -677,7 +687,8 @@ fun DeleteAlertDialog(
     itemType: String,
     itemToDelete: ItemData,
     viewModel: ItemViewModel,
-    context: Context
+    context: Context,
+    user: MutableState<FirebaseUser?>
 ) {
     AlertDialog(
         onDismissRequest = { showDialog.value = false },
@@ -686,6 +697,7 @@ fun DeleteAlertDialog(
         confirmButton = {
             TextButton(onClick = {
                 viewModel.deleteItem(itemToDelete.toItem())
+                user.value?.uid?.let { viewModel.deleteItemFromFirestore(itemToDelete.toItem(), it) } // Firestore에서도 삭제
                 showDialog.value = false
                 Toast.makeText(
                     context,

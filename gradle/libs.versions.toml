@@ -22,6 +22,7 @@ symbolProcessingApi = "2.1.0-1.0.29"
 runtimeLivedata = "1.7.8"
 firebaseAuthKtx = "23.2.0"
 media3CommonKtx = "1.5.1"
+firebaseFirestoreKtx = "25.1.2"
 
 
 [libraries]
@@ -55,6 +56,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 google-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

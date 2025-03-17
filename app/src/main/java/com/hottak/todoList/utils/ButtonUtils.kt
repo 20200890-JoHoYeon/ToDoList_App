@@ -12,6 +12,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.colorResource
+import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
@@ -46,7 +47,8 @@ fun handleButtonClick(
     viewModel: ItemViewModel,
     dateInput: MutableState<String>,
     pickerDateInitialValue: MutableState<String>,
-    currentDate: MutableState<LocalDate>
+    currentDate: MutableState<LocalDate>,
+    user: MutableState<FirebaseUser?>
 ) {
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
@@ -73,6 +75,7 @@ fun handleButtonClick(
     } else {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
             viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem())
+            user.value?.uid?.let { viewModel.saveItemToFirestore(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem(), it) }
             Log.d("test", "insert items")
             pickerDateInitialValue.value = dateInput.value
 

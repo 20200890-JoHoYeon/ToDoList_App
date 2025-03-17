@@ -12,6 +12,10 @@ interface ItemDao {
     @Insert
     suspend fun insert(item: Item)
 
+    // 여러 아이템을 한 번에 삽입하는 메서드
+    @Insert
+    suspend fun insertAll(items: List<Item>)
+
     @Delete
     suspend fun delete(item: Item)
 
@@ -26,4 +30,5 @@ interface ItemDao {
 
     @Query("SELECT * FROM items") // 모든 항목 조회
     fun getAll(): LiveData<List<Item>>
+
 }

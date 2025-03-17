@@ -21,6 +21,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
@@ -45,7 +47,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
-fun Page2GalleryScreen(navController: NavController) {
+fun Page2GalleryScreen(navController: NavController, user: MutableState<FirebaseUser?>) {
     // 기본 설정
     val context = LocalContext.current
     val appContext = context.applicationContext as Application

@@ -42,6 +42,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.firebase:firebase-firestore-ktx") // Kotlin용
     implementation("com.google.android.gms:play-services-auth:18.4.0")
     implementation(platform(libs.firebase.bom))
     // Firebase 라이브러리들은 BoM을 사용하므로 버전을 명시하지 않습니다.
@@ -57,6 +58,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.google.firebase.auth.ktx)
     implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.firebase.firestore.ktx)
     ksp(libs.symbol.processing.api)
     ksp(libs.androidx.room.common)
     ksp(libs.androidx.room.compiler)
