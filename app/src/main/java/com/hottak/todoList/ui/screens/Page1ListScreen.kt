@@ -463,6 +463,8 @@ fun PageContent(
 
         val onDeleteItem: (ItemData) -> Unit = { item ->
             if (!isEditing.value) {
+
+
                 // 어떤 리스트에서 삭제되는지 확인
                 val itemType = when {
                     items.contains(item) -> "진행중인"
@@ -488,9 +490,13 @@ fun PageContent(
             }
 
             if (itemType != null) {
+                // 아이템의 documentId 가져오기(파이어스토어 삭제용도)
+                val documentId = itemToDelete.value!!.documentId
+                Log.d("test", "삭제할 documentId: $documentId 아이템: ${itemToDelete.value} ")
                 DeleteAlertDialog(
                     showDialog = showDialog,
                     itemType = itemType,
+                    documentId = documentId,
                     user = user,
                     itemToDelete = itemToDelete.value!!,
                     viewModel = viewModel,
@@ -688,7 +694,8 @@ fun DeleteAlertDialog(
     itemToDelete: ItemData,
     viewModel: ItemViewModel,
     context: Context,
-    user: MutableState<FirebaseUser?>
+    user: MutableState<FirebaseUser?>,
+    documentId: String
 ) {
     AlertDialog(
         onDismissRequest = { showDialog.value = false },
@@ -697,7 +704,9 @@ fun DeleteAlertDialog(
         confirmButton = {
             TextButton(onClick = {
                 viewModel.deleteItem(itemToDelete.toItem())
-                user.value?.uid?.let { viewModel.deleteItemFromFirestore(itemToDelete.toItem(), it) } // Firestore에서도 삭제
+                user.value?.uid?.let { userId ->
+                    viewModel.deleteItemFromFirestore(documentId, userId) // Firestore에서도 삭제
+                }
                 showDialog.value = false
                 Toast.makeText(
                     context,

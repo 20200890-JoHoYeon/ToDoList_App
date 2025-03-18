@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
 
 class ItemViewModel(application: Application) : AndroidViewModel(application) {
@@ -44,16 +45,16 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
 
     fun saveItemToFirestore(item: Item, userId: String) {
         val itemRef = db.collection("users").document(userId).collection("items")
-        val firestoreItem = FireStoreItemData(item.title, item.content, item.date, item.isCompleted)
+        val firestoreItem = ItemData(item.documentId, item.title, item.content, item.date, item.isCompleted)
 
-        itemRef.document(item.id.toString()) // RoomDB ID 기반
-            .set(firestoreItem)
+        itemRef.document(item.documentId) // Room DB의 id 값 사용
+            .set(firestoreItem, SetOptions.merge()) // 필드만 병합하고 덮어쓰지 않음
             .addOnSuccessListener { Log.d("Firestore", "Item saved successfully!") }
             .addOnFailureListener { e -> Log.e("Firestore", "Error saving item", e) }
     }
 
-    fun deleteItemFromFirestore(item: Item, userId: String) {
-        val itemRef = db.collection("users").document(userId).collection("items").document(item.id.toString())
+    fun deleteItemFromFirestore(documentId: String, userId: String) {
+        val itemRef = db.collection("users").document(userId).collection("items").document(documentId)
 
         itemRef.delete()
             .addOnSuccessListener { Log.d("Firestore", "Item deleted successfully!") }

@@ -126,7 +126,7 @@ fun GalleryContent(
                 }
 
                 // 📌 실제 아이템 추가
-                items(items, key = { it.id }) { item ->
+                items(items, key = { it.documentId }) { item ->
                     val statusText = if (item.isCompleted) "완료" else "진행중"
                     val alphaValue = if (item.isCompleted) 0.5f else 1f
 

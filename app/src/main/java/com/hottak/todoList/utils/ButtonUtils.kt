@@ -12,7 +12,9 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.colorResource
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.firestore
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
@@ -50,6 +52,11 @@ fun handleButtonClick(
     currentDate: MutableState<LocalDate>,
     user: MutableState<FirebaseUser?>
 ) {
+    // Firestore에서 문서 ID를 먼저 생성
+    val newDocRef = Firebase.firestore.collection("items").document()
+    val documentId = newDocRef.id  // 생성된 문서 ID 가져오기
+
+
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
 
@@ -74,8 +81,24 @@ fun handleButtonClick(
         }
     } else {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-            viewModel.insertItem(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem())
-            user.value?.uid?.let { viewModel.saveItemToFirestore(ItemData(title = userInput.value, content = textInput.value, date = dateInput.value, isCompleted = false).toItem(), it) }
+
+            // 아이템 객체 생성
+            val newItem = ItemData(
+                title = userInput.value,
+                content = textInput.value,
+                date = dateInput.value,
+                isCompleted = false,
+                documentId = documentId
+            ).toItem()
+
+            // RoomDB에 저장
+            viewModel.insertItem(newItem)
+
+            // Firestore에도 저장
+            user.value?.uid?.let { uid ->
+                viewModel.saveItemToFirestore(newItem, uid)
+            }
+
             Log.d("test", "insert items")
             pickerDateInitialValue.value = dateInput.value
 

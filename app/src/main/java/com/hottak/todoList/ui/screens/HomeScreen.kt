@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,8 +37,9 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.hottak.todoList.model.FireStoreItemData
+
 import com.hottak.todoList.model.Item
+import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
 import com.hottak.todoList.ui.components.GoogleSignInButton
@@ -77,34 +78,35 @@ fun HomeScreen(
     fun fetchDataFromFirestore(userId: String) {
         val itemsRef = db.collection("users").document(userId).collection("items")
 
-        itemsRef.get()
-            .addOnSuccessListener { documents ->
-                val itemsList = mutableListOf<Item>()
-                for (document in documents) {
-                    val firestoreItem = document.toObject(FireStoreItemData::class.java)
-                    val item = Item(
-                        title = firestoreItem.title,
-                        content = firestoreItem.content,
-                        date = firestoreItem.date,
-                        isCompleted = firestoreItem.isCompleted
-                    )
-                    itemsList.add(item)
-
-                    // 각 아이템의 로그 출력
-                    Log.d("Firestore", "Fetched item: Title = ${item.title}, Content = ${item.content}, Date = ${item.date}, Completed = ${item.isCompleted}")
-                }
-
-                // 모든 아이템을 한 번에 Room DB에 저장
-                if (itemsList.isNotEmpty()) {
-                    viewModel.insertItems(itemsList) // 여러 아이템을 한 번에 저장하는 함수 호출
-                } else {
-                    Log.d("Firestore", "No items found in Firestore.")
-                }
-            }
-            .addOnFailureListener { e ->
-                // 오류 처리: 예를 들어, 사용자에게 오류 메시지 표시
-                Log.e("Firestore", "Error fetching items: ${e.message}", e)
-            }
+//        itemsRef.get()
+//            .addOnSuccessListener { documents ->
+//                val itemsList = mutableListOf<Item>()
+//                for (document in documents) {
+//                    val firestoreItem = document.toObject(ItemData::class.java)
+//                    val item = Item(
+//                        documentId = firestoreItem.documentId,
+//                        title = firestoreItem.title,
+//                        content = firestoreItem.content,
+//                        date = firestoreItem.date,
+//                        isCompleted = firestoreItem.isCompleted
+//                    )
+//                    itemsList.add(item)
+//
+//                    // 각 아이템의 로그 출력
+//                    Log.d("Firestore", "Fetched item: Title = ${item.title}, Content = ${item.content}, Date = ${item.date}, Completed = ${item.isCompleted}")
+//                }
+//
+//                // 모든 아이템을 한 번에 Room DB에 저장
+//                if (itemsList.isNotEmpty()) {
+//                    viewModel.insertItems(itemsList) // 여러 아이템을 한 번에 저장하는 함수 호출
+//                } else {
+//                    Log.d("Firestore", "No items found in Firestore.")
+//                }
+//            }
+//            .addOnFailureListener { e ->
+//                // 오류 처리: 예를 들어, 사용자에게 오류 메시지 표시
+//                Log.e("Firestore", "Error fetching items: ${e.message}", e)
+//            }
 
     }
 
