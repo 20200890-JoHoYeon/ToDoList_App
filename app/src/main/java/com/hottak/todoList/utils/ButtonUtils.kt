@@ -56,7 +56,7 @@ fun handleButtonClick(
     val newDocRef = Firebase.firestore.collection("items").document()
     val documentId = newDocRef.id  // 생성된 문서 ID 가져오기
 
-
+    //room DB와 Firestore에 수정과 생성을 담당하는 로직
     if (isEditing.value && editingItem.value != null) {
         if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
 
@@ -67,6 +67,10 @@ fun handleButtonClick(
             item.date = dateInput.value
             pickerDateInitialValue.value = dateInput.value
             viewModel.updateItem(item.toItem())
+            // Firestore에도 수정시 저장
+            user.value?.uid?.let { uid ->
+                viewModel.saveItemToFirestore(item.toItem(), uid)
+            }
             isEditing.value = false
             editingItem.value = null
             Log.d("test", "Updated items: $item")
