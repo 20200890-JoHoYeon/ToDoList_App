@@ -59,18 +59,6 @@ fun HomeScreen(
     // 로그인 상태 추적
     val isUserLoggedIn = remember { mutableStateOf(user.value != null) }
 
-    // FirebaseAuth의 상태 변화를 감지하여 user 상태 업데이트
-    DisposableEffect(Unit) {
-        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            user.value = firebaseAuth.currentUser
-            isUserLoggedIn.value = user.value != null
-        }
-        auth.addAuthStateListener(authStateListener)
-
-        onDispose {
-            auth.removeAuthStateListener(authStateListener)
-        }
-    }
 
     fun fetchDataFromFirestore(userId: String) {
         // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
@@ -108,8 +96,25 @@ fun HomeScreen(
             }
     }
 
+    // FirebaseAuth의 상태 변화를 감지하여 user 상태 업데이트
+    DisposableEffect(Unit) {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            user.value = firebaseAuth.currentUser
+            isUserLoggedIn.value = user.value != null
+            // If the user is logged in, fetch data from Firestore
+            if (isUserLoggedIn.value) {
+                user.value?.uid?.let { userId ->
+                    Log.d("HomeScreen", "User logged in, fetching data for userId: $userId")
+                    fetchDataFromFirestore(userId)
+                }
+            }
+        }
+        auth.addAuthStateListener(authStateListener)
 
-
+        onDispose {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
 
     // 로그인 성공 처리
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
@@ -154,59 +159,6 @@ fun HomeScreen(
         val signInIntent = googleSignInClient.signInIntent
         signInLauncher.launch(signInIntent)
     }
-
-//
-//    fun saveItemToFirestore(item: Item, userId: String) {
-//        if (userId.isBlank()) {
-//            Log.e("Firestore", "User ID is empty! Cannot save item.")
-//            return
-//        }
-//
-//        val itemRef = db.collection("users").document(userId).collection("items")
-//
-//        val firestoreItem = FireStoreItemData(item.title, item.content, item.date, item.isCompleted)
-//
-//        itemRef.document(item.id.toString()) // 고유한 ID 설정 (RoomDB ID 기반)
-//            .set(firestoreItem)
-//            .addOnSuccessListener {
-//                Log.d("Firestore", "Item added successfully with ID: ${item.id}")
-//            }
-//            .addOnFailureListener { e ->
-//                Log.e("Firestore", "Error adding item", e)
-//            }
-//    }
-//
-//    fun loadItemsFromFirestore(userId: String, callback: (List<Item>) -> Unit) {
-//        if (userId.isBlank()) {
-//            Log.e("Firestore", "User ID is empty! Cannot fetch items.")
-//            return
-//        }
-//
-//        val itemRef = db.collection("users").document(userId).collection("items")
-//
-//        itemRef.get().addOnSuccessListener { documents ->
-//            val itemList = mutableListOf<Item>()
-//            for (document in documents) {
-//                val item = document.toObject(FireStoreItemData::class.java)
-//                itemList.add(Item(
-//                    id = document.id.toLongOrNull() ?: 0L, // ID를 Long으로 변환
-//                    title = item.title,
-//                    content = item.content,
-//                    date = item.date,
-//                    isCompleted = item.isCompleted
-//                ))
-//            }
-//            callback(itemList)
-//
-//            // 로그로 데이터 출력
-//            itemList.forEach {
-//                Log.d("Firestore", "Item: ${it.title}, ${it.content}, ${it.date}, Completed: ${it.isCompleted}")
-//            }
-//        }.addOnFailureListener { e ->
-//            Log.e("Firestore", "Error fetching items", e)
-//        }
-//    }
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
