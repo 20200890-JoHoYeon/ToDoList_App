@@ -99,11 +99,20 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             .addOnFailureListener { e -> Log.e("Firestore", "Error deleting item", e) }
     }
 
-
-    fun insertItems(itemsList: List<Item>) {
+    // 클라우드 디비에서 불러온 아이템을 추가하거나 업데이트하는 함수
+    fun insertOrUpdateItems(items: List<Item>) {
+        // Room DB에 삽입 또는 업데이트
         viewModelScope.launch {
-            // Room DB에 여러 아이템을 삽입
-            repository.insertItems(itemsList)
+            try {
+                items.forEach { item ->
+                    Log.d("RoomDB", "Inserting or updating item: ${item.title}")
+                }
+                repository.insertItems(items) // Room DB에 삽입 또는 업데이트
+                Log.d("RoomDB", "Items inserted/updated successfully")
+            } catch (e: Exception) {
+                Log.e("RoomDB", "Error inserting/updating items", e)
+            }
         }
     }
+
 }

@@ -1,5 +1,6 @@
 package com.hottak.todoList.model
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 
@@ -21,9 +22,13 @@ class ItemRepository(private val itemDao: ItemDao) {
         itemDao.insert(item)
     }
 
-    // 여러 아이템 삽입
     suspend fun insertItems(itemsList: List<Item>) {
-        itemDao.insertAll(itemsList) // Room DB에서 여러 아이템을 한 번에 삽입
+        try {
+            itemDao.insertAll(itemsList)
+            Log.d("RoomDB", "Items inserted successfully")
+        } catch (e: Exception) {
+            Log.e("RoomDB", "Error inserting items", e)
+        }
     }
 
 

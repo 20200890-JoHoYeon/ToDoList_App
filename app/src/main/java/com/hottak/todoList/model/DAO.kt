@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 
@@ -13,7 +14,7 @@ interface ItemDao {
     suspend fun insert(item: Item)
 
     // 여러 아이템을 한 번에 삽입하는 메서드
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE) // 중복된 항목은 덮어씁니다.
     suspend fun insertAll(items: List<Item>)
 
     @Delete

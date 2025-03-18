@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,11 +36,11 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-
 import com.hottak.todoList.model.Item
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
+import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.GoogleSignInButton
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -73,42 +72,46 @@ fun HomeScreen(
         }
     }
 
-
-    // Firestore에서 데이터 가져오기
     fun fetchDataFromFirestore(userId: String) {
+        // /users/{userId}/items 경로에서 데이터 가져오기
         val itemsRef = db.collection("users").document(userId).collection("items")
 
-//        itemsRef.get()
-//            .addOnSuccessListener { documents ->
-//                val itemsList = mutableListOf<Item>()
-//                for (document in documents) {
-//                    val firestoreItem = document.toObject(ItemData::class.java)
-//                    val item = Item(
-//                        documentId = firestoreItem.documentId,
-//                        title = firestoreItem.title,
-//                        content = firestoreItem.content,
-//                        date = firestoreItem.date,
-//                        isCompleted = firestoreItem.isCompleted
-//                    )
-//                    itemsList.add(item)
-//
-//                    // 각 아이템의 로그 출력
-//                    Log.d("Firestore", "Fetched item: Title = ${item.title}, Content = ${item.content}, Date = ${item.date}, Completed = ${item.isCompleted}")
-//                }
-//
-//                // 모든 아이템을 한 번에 Room DB에 저장
-//                if (itemsList.isNotEmpty()) {
-//                    viewModel.insertItems(itemsList) // 여러 아이템을 한 번에 저장하는 함수 호출
-//                } else {
-//                    Log.d("Firestore", "No items found in Firestore.")
-//                }
-//            }
-//            .addOnFailureListener { e ->
-//                // 오류 처리: 예를 들어, 사용자에게 오류 메시지 표시
-//                Log.e("Firestore", "Error fetching items: ${e.message}", e)
-//            }
+        itemsRef.get()
+            .addOnSuccessListener { documents ->
+                Log.d("Firestore", "Data fetch successful!")
+                val itemsList = mutableListOf<Item>()
+                for (document in documents) {
+                    try {
+                        // Firestore에서 ItemData로 변환
+                        val firestoreItem = document.toObject(ItemData::class.java)
+                        val item = ItemData(
+                            documentId = document.id,  // Firestore 문서의 ID
+                            title = firestoreItem.title,
+                            content = firestoreItem.content,
+                            date = firestoreItem.date,
+                            isCompleted = firestoreItem.isCompleted
+                        )
+                        itemsList.add(item.toItem())
 
+                        // 각 아이템의 로그 출력
+                        Log.d("Firestore", "Fetched item: Title = ${item.title}, Content = ${item.content}, Date = ${item.date}, Completed = ${item.isCompleted}")
+                    } catch (e: Exception) {
+                        Log.e("Firestore", "Error processing document: ${document.id}", e)
+                    }
+                }
+
+                // 모든 아이템을 한 번에 Room DB에 저장
+                if (itemsList.isNotEmpty()) {
+                    viewModel.insertOrUpdateItems(itemsList) // 여러 아이템을 한 번에 저장(업데이트 포함)
+                } else {
+                    Log.d("Firestore", "No items found in Firestore.")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error fetching items: ${e.message}", e)
+            }
     }
+
 
 
     // 로그인 성공 처리
@@ -125,8 +128,9 @@ fun HomeScreen(
                         Log.d("GoogleSignIn", "signInWithCredential:success")
                         isUserLoggedIn.value = true // 로그인 성공시 상태 변경
 
-                        // 로그인 후 Firestore에서 데이터 가져오기
+                        //로그인 후 Firestore에서 데이터 가져오기
                         user.value?.uid?.let { userId ->
+                            Log.d("GoogleSignIn", "userId $userId")
                             fetchDataFromFirestore(userId)
                         }
 

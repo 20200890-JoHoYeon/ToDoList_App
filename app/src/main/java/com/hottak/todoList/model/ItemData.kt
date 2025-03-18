@@ -7,5 +7,7 @@ data class ItemData(
     var content: String,
     var date: String,
     val isCompleted: Boolean = false,
-
-)
+){
+    // 기본 생성자 추가
+    constructor() : this("", "", "","", false)
+}
