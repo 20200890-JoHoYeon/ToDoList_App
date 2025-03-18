@@ -45,13 +45,51 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
 
     fun saveItemToFirestore(item: Item, userId: String) {
         val itemRef = db.collection("users").document(userId).collection("items")
-        val firestoreItem = ItemData(item.documentId, item.title, item.content, item.date, item.isCompleted)
 
-        itemRef.document(item.documentId) // Room DB의 id 값 사용
-            .set(firestoreItem, SetOptions.merge()) // 필드만 병합하고 덮어쓰지 않음
-            .addOnSuccessListener { Log.d("Firestore", "Item saved successfully!") }
-            .addOnFailureListener { e -> Log.e("Firestore", "Error saving item", e) }
+        // Firestore에 저장할 객체
+        val firestoreItem = hashMapOf(
+            "documentId" to item.documentId,
+            "title" to item.title,
+            "content" to item.content,
+            "date" to item.date,
+            "isCompleted" to item.isCompleted
+        )
+
+        // 문서가 존재하면 업데이트, 존재하지 않으면 새로 추가
+        itemRef.document(item.documentId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // 기존 문서가 존재하면 update()로 필드만 수정
+                    itemRef.document(item.documentId)
+                        .update(
+                            "title", item.title,
+                            "content", item.content,
+                            "date", item.date,
+                            "isCompleted", item.isCompleted
+                        )
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Item updated successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error updating item", e)
+                        }
+                } else {
+                    // 문서가 존재하지 않으면 새로 추가
+                    itemRef.document(item.documentId)
+                        .set(firestoreItem, SetOptions.merge()) // 기존 필드만 병합하여 저장
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Item saved successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firestore", "Error saving item", e)
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error checking document existence", e)
+            }
     }
+
 
     fun deleteItemFromFirestore(documentId: String, userId: String) {
         val itemRef = db.collection("users").document(userId).collection("items").document(documentId)

@@ -506,26 +506,36 @@ fun PageContent(
                 Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
-
         fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
             if (isInProgress) {
                 if (!isEditing.value) {
                     val updatedItem = item.copy(isCompleted = checked).toItem()
                     Log.d("ItemUpdate", "Updated items: $updatedItem")
-                    viewModel.updateItem(updatedItem)
+                    viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
+
+                    // 파이어스토어에 업데이트 반영
+                    user.value?.uid?.let { viewModel.saveItemToFirestore(updatedItem, it) }
+
                     if (checked) addItemToCompleted(item)
                     items.remove(item)
-                }else {
+                } else {
                     Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 if (!isEditing.value) {
                     val updatedItem = item.copy(isCompleted = checked).toItem()
-                    viewModel.updateItem(updatedItem)
+                    viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
+
+                    // 파이어스토어에 업데이트 반영
+                    user.value?.uid?.let { viewModel.saveItemToFirestore(updatedItem, it) }
+
                     completionItems.remove(item)
-                }else Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
+
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier
