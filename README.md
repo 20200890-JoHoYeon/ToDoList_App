@@ -5,7 +5,7 @@ Develop ToDOList App Project for Google Play Store Deployment
 
 Front-End: Jetpack Compose <br />
 Back-End: Kotlin, Java <br />
-Database: Room
+Database: Room, Firestore
 
 # ToDoList_App Project Results :exclamation:
 
@@ -37,8 +37,8 @@ Click [here]( ) to visit my project.
 
 ## Version 3.0
 ~~1. 소셜로그인 <br />~~
-2. 클라우드 DB <br />
-3. 설정 페이지 추가 예정
+~~2. 클라우드 DB(Firestore) <br />~~
+~~3. 설정 페이지 추가 예정~~
 
 ## Version 2.4
 ![이미지 3](https://github.com/user-attachments/assets/3c782201-09b1-4e7b-a943-b7ca0a9b138f)
@@ -51,6 +51,7 @@ Click [here]( ) to visit my project.
 1. UI/UX 전면수정 <br />
 2. 리스트 날짜 필터링 및 데이트피커 선택 생성 <br />
 3. ToDo리스트 상세 팝업 기능 적용
+4. 로컬 DB (roomDB)
 
 ## Version 1.0
 ![이미지 1](https://github.com/user-attachments/assets/e18fd4e3-9c90-4a5d-aa5a-9482e90e8056)
