@@ -62,6 +62,7 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
                     // 기존 문서가 존재하면 update()로 필드만 수정
                     itemRef.document(item.documentId)
                         .update(
+                            "documentId", item.documentId,
                             "title", item.title,
                             "content", item.content,
                             "date", item.date,

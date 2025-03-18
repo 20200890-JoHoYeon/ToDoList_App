@@ -73,8 +73,10 @@ fun HomeScreen(
     }
 
     fun fetchDataFromFirestore(userId: String) {
-        // /users/{userId}/items 경로에서 데이터 가져오기
+        // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
         val itemsRef = db.collection("users").document(userId).collection("items")
+
+        Log.d("Firestore", "Fetching data for userId: $userId")
 
         itemsRef.get()
             .addOnSuccessListener { documents ->
@@ -84,25 +86,19 @@ fun HomeScreen(
                     try {
                         // Firestore에서 ItemData로 변환
                         val firestoreItem = document.toObject(ItemData::class.java)
-                        val item = ItemData(
-                            documentId = document.id,  // Firestore 문서의 ID
-                            title = firestoreItem.title,
-                            content = firestoreItem.content,
-                            date = firestoreItem.date,
-                            isCompleted = firestoreItem.isCompleted
-                        )
-                        itemsList.add(item.toItem())
+                        Log.d("Firestore", "Fetched item: Title = ${firestoreItem.title}, Content = ${firestoreItem.content}, Date = ${firestoreItem.date}, Completed = ${firestoreItem.isCompleted}")
 
-                        // 각 아이템의 로그 출력
-                        Log.d("Firestore", "Fetched item: Title = ${item.title}, Content = ${item.content}, Date = ${item.date}, Completed = ${item.isCompleted}")
+                        // 아이템 추가
+                        itemsList.add(firestoreItem.toItem())
                     } catch (e: Exception) {
                         Log.e("Firestore", "Error processing document: ${document.id}", e)
                     }
                 }
 
-                // 모든 아이템을 한 번에 Room DB에 저장
+                // Firestore에서 데이터를 가져온 후 Room DB에 저장
                 if (itemsList.isNotEmpty()) {
-                    viewModel.insertOrUpdateItems(itemsList) // 여러 아이템을 한 번에 저장(업데이트 포함)
+                    Log.d("Firestore", "Inserting ${itemsList.size} items into Room DB.")
+                    viewModel.insertOrUpdateItems(itemsList) // 여러 아이템을 한 번에 저장
                 } else {
                     Log.d("Firestore", "No items found in Firestore.")
                 }
@@ -114,12 +110,14 @@ fun HomeScreen(
 
 
 
+
     // 로그인 성공 처리
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
         try {
             val account = task.getResult(ApiException::class.java)
-            Log.d("GoogleSignIn", "로그인 성공, 계정 정보: ${account.displayName}")
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            Log.d("GoogleSignIn", "로그인 성공, 계정 정보: ${account?.displayName}")
+
+            val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -128,20 +126,20 @@ fun HomeScreen(
                         Log.d("GoogleSignIn", "signInWithCredential:success")
                         isUserLoggedIn.value = true // 로그인 성공시 상태 변경
 
-                        //로그인 후 Firestore에서 데이터 가져오기
+                        // 로그인 후 Firestore에서 데이터 가져오기
                         user.value?.uid?.let { userId ->
                             Log.d("GoogleSignIn", "userId $userId")
                             fetchDataFromFirestore(userId)
                         }
-
                     } else {
-                        Log.w("GoogleSignIn", "signInWithCredential:failure", task.exception)
+                        Log.e("GoogleSignIn", "signInWithCredential:failure", task.exception)
                     }
                 }
         } catch (e: ApiException) {
-            Log.w("GoogleSignIn", "Google sign in failed", e)
+            Log.e("GoogleSignIn", "Google sign in failed", e)
         }
     }
+
 
     // 로그인 버튼 클릭 시 동작
     val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

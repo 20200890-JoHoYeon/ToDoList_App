@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    implementation("com.google.firebase:firebase-firestore-ktx") // Kotlin용
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.2")
     implementation("com.google.android.gms:play-services-auth:18.4.0")
     implementation(platform(libs.firebase.bom))
     // Firebase 라이브러리들은 BoM을 사용하므로 버전을 명시하지 않습니다.
