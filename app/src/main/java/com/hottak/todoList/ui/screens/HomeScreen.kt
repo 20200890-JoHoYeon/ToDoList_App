@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,25 +98,39 @@ fun HomeScreen(
             }
     }
 
-    // FirebaseAuth의 상태 변화를 감지하여 user 상태 업데이트
+    LaunchedEffect(Unit) {
+        val currentUser = auth.currentUser
+        user.value = currentUser
+        isUserLoggedIn.value = currentUser != null
+
+        if (isUserLoggedIn.value) {
+            currentUser?.uid?.let { userId ->
+                Log.d("HomeScreen", "App launched, fetching data for userId: $userId")
+                fetchDataFromFirestore(userId)  // 앱 실행 시 Firestore 데이터 가져오기
+            }
+        }
+    }
+
     DisposableEffect(Unit) {
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             user.value = firebaseAuth.currentUser
             isUserLoggedIn.value = user.value != null
-            // If the user is logged in, fetch data from Firestore
+
             if (isUserLoggedIn.value) {
                 user.value?.uid?.let { userId ->
                     Log.d("HomeScreen", "User logged in, fetching data for userId: $userId")
-                    fetchDataFromFirestore(userId)
+                    fetchDataFromFirestore(userId)  // 로그인 상태 변경 시 Firestore 데이터 가져오기
                 }
             }
         }
+
         auth.addAuthStateListener(authStateListener)
 
         onDispose {
             auth.removeAuthStateListener(authStateListener)
         }
     }
+
 
     // 로그인 성공 처리
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
@@ -134,6 +150,7 @@ fun HomeScreen(
                         // 로그인 후 Firestore에서 데이터 가져오기
                         user.value?.uid?.let { userId ->
                             Log.d("GoogleSignIn", "userId $userId")
+                            Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
                             fetchDataFromFirestore(userId)
                         }
                     } else {

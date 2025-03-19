@@ -31,7 +31,7 @@ fun Page4ReadFileScreen(navController: NavHostController) {
 
         },
         content = { innerPadding ->
-            VeyrontecContent(
+            ReadFileContent(
                 context = context,
                 innerPadding = innerPadding,
             )
@@ -40,7 +40,7 @@ fun Page4ReadFileScreen(navController: NavHostController) {
 }
 
 @Composable
-fun VeyrontecContent(innerPadding: PaddingValues, context: Context) {
+fun ReadFileContent(innerPadding: PaddingValues, context: Context) {
     val deviceNo = readSettingIni(context, "Setting_Sample.ini")
     Column(modifier = Modifier.padding(innerPadding)) {
         Text(text = "[Todo_List]")

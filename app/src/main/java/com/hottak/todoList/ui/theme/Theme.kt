@@ -3,21 +3,14 @@ package com.hottak.todoList.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = PurpleGrey80,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = PrimaryBlue,      // 기본(primary) 컬러
+    secondary = PrimaryBlue,    // 보조(secondary) 컬러 (버튼 강조)
+    background = BackgroundColor, // 배경색
+    onPrimary = Color.White,    // primary 컬러 위 텍스트 색상 (흰색)
+    onBackground = TextBlack    // 배경색 위 텍스트 색상 (검정)
 )
 
 @Composable

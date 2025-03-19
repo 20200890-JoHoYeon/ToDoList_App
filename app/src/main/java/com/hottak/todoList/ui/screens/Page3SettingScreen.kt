@@ -1,14 +1,15 @@
 package com.hottak.todoList.ui.screens
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,7 +22,7 @@ import com.hottak.todoList.ui.components.TopBar
 @Composable
 fun Page3SettingScreen(navController: NavHostController, googleSignInClient: GoogleSignInClient) {
     val auth = FirebaseAuth.getInstance() // ✅ FirebaseAuth 인스턴스 생성
-
+    val context = LocalContext.current
     Scaffold(
         containerColor = Color.White,
         modifier = Modifier.fillMaxSize().background(color = Color.White),
@@ -33,20 +34,36 @@ fun Page3SettingScreen(navController: NavHostController, googleSignInClient: Goo
                 navController = navController,
                 auth = auth,
                 googleSignInClient = googleSignInClient,
+                context = context,
             )
         }
     )
 }
 
 @Composable
-fun SettingContent(innerPadding: PaddingValues, navController: NavController, auth: FirebaseAuth, googleSignInClient: GoogleSignInClient) {
+fun SettingContent(
+    innerPadding: PaddingValues,
+    navController: NavController,
+    auth: FirebaseAuth,
+    googleSignInClient: GoogleSignInClient,
+    context: Context
+) {
     fun signOutFromGoogle() {
+        val userName = auth.currentUser?.displayName ?: "사용자"
+
         auth.signOut()
         googleSignInClient.signOut().addOnCompleteListener {
-            Log.d("GoogleSignIn", "로그아웃 완료")
-            navController.navigate("home") // 로그아웃 후 홈 화면으로 이동
+            Log.d("GoogleSignIn", "$userName 님 로그아웃 완료")
+            Toast.makeText(context, "$userName 님 로그아웃 완료", Toast.LENGTH_SHORT).show()
+
+            // 홈 화면으로 이동하면서 기존 백 스택 제거
+            navController.navigate("home") {
+                popUpTo("home") { inclusive = true }
+            }
         }
     }
+
+
 
     Column(
         modifier = Modifier
@@ -54,6 +71,7 @@ fun SettingContent(innerPadding: PaddingValues, navController: NavController, au
             .padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+// 추후에 추가할 세팅 옵션 ui
 //        LazyColumn(
 //            modifier = Modifier
 //                .weight(1f)
@@ -85,7 +103,7 @@ fun SettingContent(innerPadding: PaddingValues, navController: NavController, au
         }
     }
 }
-
+// 추후에 추가할 세팅 옵션 ui
 @Composable
 fun SettingItem(index: Int) {
     var isChecked by remember { mutableStateOf(false) }
