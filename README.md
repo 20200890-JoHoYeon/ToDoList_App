@@ -36,9 +36,10 @@ Cotlin Learning Toy Project ToDoList App, which was conducted by the company bef
 Click [here]( ) to visit my project.
 
 ## Version 3.0
-~~1. 소셜로그인 <br />~~
-~~2. 클라우드 DB(Firestore) <br />~~
-~~3. 설정 페이지 추가 예정~~
+![이미지 4](https://github.com/user-attachments/assets/9600009f-05b2-462e-bb1c-fe2fbaa6f38a)
+1. 소셜 회원가입(google) <br />
+2. 클라우드 DB(Firestore) 동기화 <br />
+3. 설정 페이지(로그아웃 기능) 추가
 
 ## Version 2.4
 ![이미지 3](https://github.com/user-attachments/assets/3c782201-09b1-4e7b-a943-b7ca0a9b138f)
