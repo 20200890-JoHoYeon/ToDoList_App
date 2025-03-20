@@ -35,6 +35,9 @@ Cotlin Learning Toy Project ToDoList App, which was conducted by the company bef
 
 Click [here]( ) to visit my project.
 
+## Version 3.1
+1. 클라우드 DB(Firestore) 데이터 조회 시점 추가(로그인 성공, 앱 실행, 홈 화면 접근)
+
 ## Version 3.0
 ![이미지 4](https://github.com/user-attachments/assets/5e17a5cb-b279-4d24-a424-2e4a7ec7ade9)
 1. 소셜 회원가입(google) <br />
