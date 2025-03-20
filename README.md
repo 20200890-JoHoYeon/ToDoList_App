@@ -2,10 +2,10 @@
 Develop ToDOList App Project for Google Play Store Deployment
 
 # development stack :question:
-
-Front-End: Jetpack Compose <br />
-Back-End: Kotlin, Java <br />
-Database: Room, Firestore
+Front-End: Jetpack Compose  <br /> 
+Back-End: Kotlin, Java, Firebase Cloud Functions <br />
+Database: Room (Local), Firestore (Cloud) <br /> 
+Cloud Services: Firebase Authentication, Firestore Database  
 
 # ToDoList_App Project Results :exclamation:
 
