@@ -75,7 +75,14 @@ fun HomeScreen(
                 for (document in documents) {
                     try {
                         // Firestore에서 ItemData로 변환
-                        val firestoreItem = document.toObject(ItemData::class.java)
+                        val firestoreItem = ItemData(
+                            documentId = document.getString("documentId") ?: "",
+                            title = document.getString("title") ?: "",
+                            content = document.getString("content") ?: "",
+                            date = document.getString("date") ?: "",
+                            isCompleted = document.getBoolean("isCompleted") ?: false // 🔥 null 방지
+                        )
+
                         Log.d("Firestore", "Fetched item: Title = ${firestoreItem.title}, Content = ${firestoreItem.content}, Date = ${firestoreItem.date}, Completed = ${firestoreItem.isCompleted}")
 
                         // 아이템 추가

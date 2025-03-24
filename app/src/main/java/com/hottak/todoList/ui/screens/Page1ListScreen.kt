@@ -512,10 +512,10 @@ fun PageContent(
                     val updatedItem = item.copy(isCompleted = checked).toItem()
                     Log.d("ItemUpdate", "Updated items: $updatedItem")
                     viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
-
                     // 파이어스토어에 업데이트 반영
-                    user.value?.uid?.let { viewModel.saveItemToFirestore(updatedItem, it) }
-
+                    user.value?.uid?.let { uid ->
+                        viewModel.saveItemToFirestore(updatedItem, uid)
+                    }
                     if (checked) addItemToCompleted(item)
                     items.remove(item)
                 } else {
@@ -524,11 +524,12 @@ fun PageContent(
             } else {
                 if (!isEditing.value) {
                     val updatedItem = item.copy(isCompleted = checked).toItem()
+                    Log.d("ItemUpdate", "Updated items: $updatedItem")
                     viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
-
                     // 파이어스토어에 업데이트 반영
-                    user.value?.uid?.let { viewModel.saveItemToFirestore(updatedItem, it) }
-
+                    user.value?.uid?.let { uid ->
+                        viewModel.saveItemToFirestore(updatedItem, uid)
+                    }
                     completionItems.remove(item)
                 } else {
                     Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
