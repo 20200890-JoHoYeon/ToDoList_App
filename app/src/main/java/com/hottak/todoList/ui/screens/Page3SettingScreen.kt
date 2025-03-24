@@ -17,6 +17,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.hottak.todoList.ui.components.TopBar
 
 @Composable
@@ -48,9 +49,7 @@ fun SettingContent(
     googleSignInClient: GoogleSignInClient,
     context: Context
 ) {
-    fun signOutFromGoogle() {
-        val userName = auth.currentUser?.displayName ?: "사용자"
-
+    fun proceedWithSignOut(userName: String) {
         auth.signOut()
         googleSignInClient.signOut().addOnCompleteListener {
             Log.d("GoogleSignIn", "$userName 님 로그아웃 완료")
@@ -62,6 +61,30 @@ fun SettingContent(
             }
         }
     }
+
+    fun signOutFromGoogle() {
+        val userName = auth.currentUser?.displayName ?: "사용자"
+        val userId = auth.currentUser?.uid
+
+        if (userId != null) {
+            val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
+
+            // Firestore에서 deviceId 초기화 후 로그아웃 실행
+            userRef.update("deviceId", null)
+                .addOnSuccessListener {
+                    Log.d("GoogleSignIn", "Firestore deviceId 초기화 완료")
+                    proceedWithSignOut(userName)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("GoogleSignIn", "Firestore deviceId 초기화 실패", e)
+                    proceedWithSignOut(userName) // 실패해도 로그아웃 진행
+                }
+        } else {
+            proceedWithSignOut(userName) // userId가 없을 경우 바로 로그아웃
+        }
+    }
+
+
 
 
 

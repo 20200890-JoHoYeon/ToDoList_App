@@ -2,6 +2,7 @@ package com.hottak.todoList.ui.screens
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -44,6 +45,12 @@ import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
 import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.GoogleSignInButton
+import android.provider.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.ui.unit.sp
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
@@ -60,7 +67,8 @@ fun HomeScreen(
 
     // 로그인 상태 추적
     val isUserLoggedIn = remember { mutableStateOf(user.value != null) }
-
+    // 다른 기기에서 이미 로그인 된 상태인지 확인하여 UI 유지하는 변수 (해당 변수가 없으면 로그인 시도 후 로그인 성공 ui가 일시적으로 나타남)
+    val isMultiLogin = remember { mutableStateOf(false) }
 
     fun fetchDataFromFirestore(userId: String) {
         // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
@@ -138,8 +146,12 @@ fun HomeScreen(
         }
     }
 
+    // 현재 기기의 Android ID 가져오는 함수
+    fun getDeviceId(context: Context): String {
+        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+    }
 
-    // 로그인 성공 처리
+    // 로그인 성공 처리 (한 계정, 한 기기 제한 추가)
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
         try {
             val account = task.getResult(ApiException::class.java)
@@ -150,15 +162,47 @@ fun HomeScreen(
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         user.value = auth.currentUser
-                        Log.d("GoogleSignIn", "user.value ${user.value}")
-                        Log.d("GoogleSignIn", "signInWithCredential:success")
-                        isUserLoggedIn.value = true // 로그인 성공시 상태 변경
+                        val currentUser = auth.currentUser
+                        isUserLoggedIn.value = true
 
-                        // 로그인 후 Firestore에서 데이터 가져오기
-                        user.value?.uid?.let { userId ->
-                            Log.d("GoogleSignIn", "userId $userId")
-                            Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
-                            fetchDataFromFirestore(userId)
+                        currentUser?.uid?.let { userId ->
+                            val currentDeviceId = getDeviceId(context)
+                            val userRef = db.collection("users").document(userId)
+
+                            // Firestore에서 저장된 deviceId 가져오기
+                            userRef.get()
+                                .addOnSuccessListener { document ->
+                                    if (document.exists()) {
+                                        isMultiLogin.value = false
+                                        val storedDeviceId = document.getString("deviceId")
+
+                                        if (storedDeviceId == null || storedDeviceId == currentDeviceId) {
+                                            // 저장된 deviceId가 없거나, 현재 기기와 일치하면 정상 로그인
+                                            Log.d("GoogleSignIn", "기기 확인 완료, 로그인 성공")
+                                            userRef.update("deviceId", currentDeviceId) // 현재 기기로 갱신
+                                            Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
+                                            fetchDataFromFirestore(userId)
+                                        } else {
+                                            // 다른 기기에서 로그인 시도 -> 차단
+                                            Log.e("GoogleSignIn", "다른 기기에서 로그인 감지! 로그인 차단됨")
+                                            Toast.makeText(context, "다른 기기에서 접속중입니다.\n로그아웃 후 다시 시도해주세요.", Toast.LENGTH_LONG).show()
+                                            auth.signOut() // 강제 로그아웃
+                                            user.value = null
+                                            isUserLoggedIn.value = false
+                                        }
+                                    } else {
+                                        // 첫 로그인 시 현재 기기 저장
+                                        Log.d("GoogleSignIn", "첫 로그인, 기기 등록 완료")
+                                        userRef.set(mapOf("deviceId" to currentDeviceId))
+                                        // 현재 기기에서 로그인 성공시에만 ui 변경되도록 하는 상태변수
+                                        isMultiLogin.value = true
+                                        Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
+                                        fetchDataFromFirestore(userId)
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.e("GoogleSignIn", "Firestore 데이터 조회 실패", e)
+                                }
                         }
                     } else {
                         Log.e("GoogleSignIn", "signInWithCredential:failure", task.exception)
@@ -168,7 +212,6 @@ fun HomeScreen(
             Log.e("GoogleSignIn", "Google sign in failed", e)
         }
     }
-
 
     // 로그인 버튼 클릭 시 동작
     val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -217,12 +260,12 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(36.dp))
 
-                if (!isUserLoggedIn.value) { // 로그인 상태가 false일 경우 버튼 표시
+                if (!isUserLoggedIn.value || !isMultiLogin.value) { // 로그인 상태가 false일 경우 버튼 표시
                     // 로그인 버튼 추가
                     GoogleSignInButton( onClick = { signInWithGoogle() }, modifier = Modifier)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-                else if (isUserLoggedIn.value) { // 로그인 상태가 true일 경우 버튼 표시
+                else if (isUserLoggedIn.value && isMultiLogin.value) { // 로그인 상태가 true일 경우 버튼 표시
                     LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                     Spacer(modifier = Modifier.height(8.dp))
                     LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
