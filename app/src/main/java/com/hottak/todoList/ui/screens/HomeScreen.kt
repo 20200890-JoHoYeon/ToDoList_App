@@ -1,9 +1,10 @@
 package com.hottak.todoList.ui.screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,11 +46,8 @@ import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
 import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.GoogleSignInButton
-import android.provider.Settings
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.ui.unit.sp
+import android.os.Build
+import com.hottak.todoList.utils.getDeviceId
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -64,7 +62,6 @@ fun HomeScreen(
     val appContext = context.applicationContext as Application
     val viewModelFactory = ItemViewModelFactory(appContext)
     val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
-
     // 로그인 상태 추적
     val isUserLoggedIn = remember { mutableStateOf(user.value != null) }
     // 다른 기기에서 이미 로그인 된 상태인지 확인하여 UI 유지하는 변수 (해당 변수가 없으면 로그인 시도 후 로그인 성공 ui가 일시적으로 나타남)
@@ -88,7 +85,7 @@ fun HomeScreen(
                             title = document.getString("title") ?: "",
                             content = document.getString("content") ?: "",
                             date = document.getString("date") ?: "",
-                            isCompleted = document.getBoolean("isCompleted") ?: false // 🔥 null 방지
+                            isCompleted = document.getBoolean("isCompleted") ?: false
                         )
 
                         Log.d("Firestore", "Fetched item: Title = ${firestoreItem.title}, Content = ${firestoreItem.content}, Date = ${firestoreItem.date}, Completed = ${firestoreItem.isCompleted}")
@@ -126,6 +123,21 @@ fun HomeScreen(
         }
     }
 
+
+
+    fun forceLogoutPreviousDevice(userId: String) {
+        val userRef = db.collection("users").document(userId)
+
+        userRef.update("forceLogout", true) // 로그아웃 트리거 설정
+            .addOnSuccessListener {
+                Log.d("GoogleSignIn", "이전 기기에서 강제 로그아웃 요청 성공")
+            }
+            .addOnFailureListener { e ->
+                Log.e("GoogleSignIn", "강제 로그아웃 요청 실패", e)
+            }
+    }
+
+
     DisposableEffect(Unit) {
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             user.value = firebaseAuth.currentUser
@@ -133,9 +145,63 @@ fun HomeScreen(
 
             if (isUserLoggedIn.value) {
                 user.value?.uid?.let { userId ->
+                    val userRef = db.collection("users").document(userId)
+                    val currentDeviceId = getDeviceId(context) // 현재 기기 ID 가져오기
+
                     Log.d("HomeScreen", "User logged in, fetching data for userId: $userId")
-                    fetchDataFromFirestore(userId)  // 로그인 상태 변경 시 Firestore 데이터 가져오기
+
+                    // Firestore에서 저장된 deviceId 가져오기
+                    userRef.get()
+                        .addOnSuccessListener { document ->
+                            val storedDeviceId = document.getString("deviceId") ?: ""
+
+                            if (storedDeviceId.isNotEmpty() && storedDeviceId != currentDeviceId) {
+                                // 다른 기기에서 로그인 중인 경우
+                                AlertDialog.Builder(context)
+                                    .setTitle("기기 변경 감지")
+                                    .setMessage("이 계정이 다른 기기에서 사용 중입니다.\n이 기기로 로그인하면 기존 기기는 로그아웃됩니다.\n계속하시겠습니까?")
+                                    .setPositiveButton("예") { _, _ ->
+                                        userRef.update("deviceId", currentDeviceId)
+                                            .addOnSuccessListener {
+                                                Log.d("GoogleSignIn", "기기 변경 승인됨, 다른 기기 로그아웃 처리")
+                                                forceLogoutPreviousDevice(userId) // 이전 기기 로그아웃 처리
+                                                Toast.makeText(context, "다른 기기에서 로그아웃 처리가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                                                fetchDataFromFirestore(userId)
+                                            }
+                                    }
+                                    .setNegativeButton("아니오") { _, _ ->
+                                        Log.e("GoogleSignIn", "로그인 차단됨")
+                                        Toast.makeText(context, "다른 기기에서 접속 중입니다.\n로그아웃 후 다시 시도해주세요.", Toast.LENGTH_LONG).show()
+                                        auth.signOut()
+                                        user.value = null
+                                        isUserLoggedIn.value = false
+                                    }
+                                    .show()
+                            } else {
+                                // 동일 기기이거나 최초 로그인 -> Firestore에 현재 deviceId 저장
+                                userRef.update("deviceId", currentDeviceId)
+                                fetchDataFromFirestore(userId) // Firestore 데이터 불러오기
+                            }
+                        }
+
+                    // 강제 로그아웃 감지
+                    userRef.addSnapshotListener { documentSnapshot, _ ->
+                        if (documentSnapshot != null && documentSnapshot.exists()) {
+                            val forceLogout = documentSnapshot.getBoolean("forceLogout") ?: false
+                            if (forceLogout) {
+                                Log.d("GoogleSignIn", "강제 로그아웃 감지됨, 사용자 로그아웃 처리")
+                                auth.signOut()
+                                user.value = null
+                                isUserLoggedIn.value = false
+                                isMultiLogin.value = false
+
+                                // 로그아웃 플래그 초기화
+                                userRef.update("forceLogout", false)
+                            }
+                        }
+                    }
                 }
+                isMultiLogin.value = true
             }
         }
 
@@ -146,10 +212,9 @@ fun HomeScreen(
         }
     }
 
-    // 현재 기기의 Android ID 가져오는 함수
-    fun getDeviceId(context: Context): String {
-        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-    }
+
+
+
 
     // 로그인 성공 처리 (한 계정, 한 기기 제한 추가)
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
@@ -174,27 +239,45 @@ fun HomeScreen(
                                 .addOnSuccessListener { document ->
                                     if (document.exists()) {
                                         isMultiLogin.value = false
+
                                         val storedDeviceId = document.getString("deviceId")
 
                                         if (storedDeviceId == null || storedDeviceId == currentDeviceId) {
-                                            // 저장된 deviceId가 없거나, 현재 기기와 일치하면 정상 로그인
+                                            // 저장된 deviceId가 없거나 현재 기기와 일치하면 정상 로그인
                                             Log.d("GoogleSignIn", "기기 확인 완료, 로그인 성공")
                                             userRef.update("deviceId", currentDeviceId) // 현재 기기로 갱신
                                             Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
+                                            isMultiLogin.value = true
+                                            isUserLoggedIn.value = true
                                             fetchDataFromFirestore(userId)
                                         } else {
-                                            // 다른 기기에서 로그인 시도 -> 차단
-                                            Log.e("GoogleSignIn", "다른 기기에서 로그인 감지! 로그인 차단됨")
-                                            Toast.makeText(context, "다른 기기에서 접속중입니다.\n로그아웃 후 다시 시도해주세요.", Toast.LENGTH_LONG).show()
-                                            auth.signOut() // 강제 로그아웃
-                                            user.value = null
-                                            isUserLoggedIn.value = false
+//                                            // 다른 기기에서 로그인 중인 경우
+//                                            AlertDialog.Builder(context)
+//                                                .setTitle("기기 변경 감지")
+//                                                .setMessage("다른 기기에서 로그인된 상태입니다.\n현재 기기로 로그인하면 기존 기기는 로그아웃됩니다.\n진행하시겠습니까?")
+//                                                .setPositiveButton("예") { _, _ ->
+//                                                    userRef.update("deviceId", currentDeviceId)
+//                                                        .addOnSuccessListener {
+//                                                            Log.d("GoogleSignIn", "기기 변경 승인됨, 다른 기기 로그아웃 처리")
+//                                                            forceLogoutPreviousDevice(userId)
+//                                                            Toast.makeText(context, "다른 기기에서 로그아웃 처리가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+//                                                            fetchDataFromFirestore(userId)
+//                                                        }
+//
+//                                                }
+//                                                .setNegativeButton("아니오") { _, _ ->
+//                                                    Log.e("GoogleSignIn", "로그인 차단됨")
+//                                                    Toast.makeText(context, "다른 기기에서 접속 중입니다.\n로그아웃 후 다시 시도해주세요.", Toast.LENGTH_LONG).show()
+//                                                    auth.signOut()
+//                                                    user.value = null
+//                                                    isUserLoggedIn.value = false
+//                                                }
+//                                                .show()
                                         }
                                     } else {
                                         // 첫 로그인 시 현재 기기 저장
                                         Log.d("GoogleSignIn", "첫 로그인, 기기 등록 완료")
                                         userRef.set(mapOf("deviceId" to currentDeviceId))
-                                        // 현재 기기에서 로그인 성공시에만 ui 변경되도록 하는 상태변수
                                         isMultiLogin.value = true
                                         Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
                                         fetchDataFromFirestore(userId)
@@ -212,6 +295,7 @@ fun HomeScreen(
             Log.e("GoogleSignIn", "Google sign in failed", e)
         }
     }
+
 
     // 로그인 버튼 클릭 시 동작
     val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

@@ -17,6 +17,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
@@ -37,8 +38,8 @@ fun BottomBar(
     dateInput: MutableState<String>,
     pickerDateInitialValue: MutableState<String>,
     currentDate: MutableState<LocalDate>,
-    user: MutableState<FirebaseUser?>
-
+    user: MutableState<FirebaseUser?>,
+    navController: NavController
 ) {
     BottomAppBar(
         containerColor = Color.White,
@@ -64,6 +65,7 @@ fun BottomBar(
                         editingItem = editingItem,
                         currentDate = currentDate,
                         pickerDateInitialValue = pickerDateInitialValue,
+                        navController = navController,
                         user = user
                     )
                 }

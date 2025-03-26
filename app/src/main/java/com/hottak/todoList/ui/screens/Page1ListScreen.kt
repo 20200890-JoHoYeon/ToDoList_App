@@ -77,7 +77,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.firestore
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel
@@ -217,6 +219,7 @@ fun Page1ListScreen(
                 editingItem = editingItem,
                 currentDate = currentDate,
                 pickerDateInitialValue = pickerDateInitialValue,
+                navController = navController,
                 user = user,
             )
         },
@@ -714,16 +717,20 @@ fun DeleteAlertDialog(
         text = { Text("정말로 아이템을 삭제하시겠습니까?") },
         confirmButton = {
             TextButton(onClick = {
-                viewModel.deleteItem(itemToDelete.toItem())
-                user.value?.uid?.let { userId ->
-                    viewModel.deleteItemFromFirestore(documentId, userId) // Firestore에서도 삭제
+                val userId = user.value?.uid ?: ""
+                val userRef = Firebase.firestore.collection("users").document(userId)
+                userRef.get().addOnSuccessListener { document ->
+                    viewModel.deleteItem(itemToDelete.toItem())
+                    user.value?.uid?.let { userId ->
+                        viewModel.deleteItemFromFirestore(documentId, userId) // Firestore에서도 삭제
+                    }
+                    showDialog.value = false
+                    Toast.makeText(
+                        context,
+                        "$itemType ToDo 아이템이 삭제되었습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                showDialog.value = false
-                Toast.makeText(
-                    context,
-                    "$itemType ToDo 아이템이 삭제되었습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
             }) {
                 Text("예")
             }

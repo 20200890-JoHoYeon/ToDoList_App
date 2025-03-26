@@ -1,6 +1,6 @@
 package com.hottak.todoList.utils
 
-// ButtonUtils.kt
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -12,6 +12,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.colorResource
+import androidx.navigation.NavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.firestore
@@ -37,7 +38,6 @@ fun getButtonColors(isEditing: Boolean): ButtonColors {
         )
     }
 }
-// 상황별 버튼 클릭 이벤트를 처리하는 함수
 @RequiresApi(Build.VERSION_CODES.O)
 fun handleButtonClick(
     isEditing: MutableState<Boolean>,
@@ -50,80 +50,75 @@ fun handleButtonClick(
     dateInput: MutableState<String>,
     pickerDateInitialValue: MutableState<String>,
     currentDate: MutableState<LocalDate>,
-    user: MutableState<FirebaseUser?>
+    user: MutableState<FirebaseUser?>,
+    navController: NavController,
 ) {
-    // Firestore에서 문서 ID를 먼저 생성
-    val newDocRef = Firebase.firestore.collection("items").document()
-    val documentId = newDocRef.id  // 생성된 문서 ID 가져오기
-
-    //room DB와 Firestore에 수정과 생성을 담당하는 로직
-    if (isEditing.value && editingItem.value != null) {
-        if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
-
-            val item = editingItem.value!!
-            item.title = userInput.value
-            item.content = textInput.value
-            item.date = getCurrentDate()
-            item.date = dateInput.value
-            pickerDateInitialValue.value = dateInput.value
-            viewModel.updateItem(item.toItem())
-            // Firestore에도 수정시 저장
-            user.value?.uid?.let { uid ->
-                viewModel.saveItemToFirestore(item.toItem(), uid)
+    val userId = user.value?.uid ?: ""
+    if (user.value?.uid.isNullOrEmpty()) {
+        // 🔴 다른 기기에서 로그인한 경우 -> 팝업 띄우고 추가/수정 차단
+        Log.d("handleButtonClick", "Device mismatch detected. Showing AlertDialog.")
+        //Toast.makeText(context, "다른 기기에서 로그인한 경우입니다.", Toast.LENGTH_SHORT).show()
+        AlertDialog.Builder(context)
+            .setMessage("다른 기기에서 로그인되었습니다. To-Do 추가/수정은 동일 기기에서만 가능합니다.")
+            .setPositiveButton("확인") { _, _ ->
+                navController.navigate("home")
             }
-            isEditing.value = false
-            editingItem.value = null
-            Log.d("test", "Updated items: $item")
-            textInput.value = ""
-            userInput.value = ""
-            Toast.makeText(context, "ToDo가 수정되었습니다.", Toast.LENGTH_SHORT).show()
-        }
-        if (userInput.value.isEmpty()) {
-            Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-        } else if (textInput.value.isEmpty()) {
-            Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-        }
+            .show()
     } else {
-        if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
+        // ✅ 동일 기기에서만 To-Do 추가/수정 가능
+        val newDocRef = Firebase.firestore.collection("items").document()
+        val documentId = newDocRef.id // Firestore 문서 ID 생성
 
-            // 아이템 객체 생성
-            val newItem = ItemData(
-                title = userInput.value,
-                content = textInput.value,
-                date = dateInput.value,
-                isCompleted = false,
-                documentId = documentId
-            ).toItem()
+        if (isEditing.value && editingItem.value != null) {
+            if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
+                val item = editingItem.value!!
+                item.title = userInput.value
+                item.content = textInput.value
+                item.date = dateInput.value
+                pickerDateInitialValue.value = dateInput.value
 
-            // RoomDB에 저장
-            viewModel.insertItem(newItem)
+                viewModel.updateItem(item.toItem()) // Room DB 업데이트
+                viewModel.saveItemToFirestore(item.toItem(), userId) // Firestore 업데이트
 
-            // Firestore에도 저장
-            user.value?.uid?.let { uid ->
-                viewModel.saveItemToFirestore(newItem, uid)
+                isEditing.value = false
+                editingItem.value = null
+                textInput.value = ""
+                userInput.value = ""
+
+                Toast.makeText(context, "To-Do가 수정되었습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "제목과 내용을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            if (userInput.value.isNotEmpty() && textInput.value.isNotEmpty()) {
+                val newItem = ItemData(
+                    title = userInput.value,
+                    content = textInput.value,
+                    date = dateInput.value,
+                    isCompleted = false,
+                    documentId = documentId
+                ).toItem()
+
+                viewModel.insertItem(newItem) // Room DB 저장
+                viewModel.saveItemToFirestore(newItem, userId) // Firestore 저장
+
+                pickerDateInitialValue.value = dateInput.value
+                currentDate.value = LocalDate.parse(
+                    dateInput.value.split(" ")[0],
+                    DateTimeFormatter.ofPattern("yy-MM-dd")
+                )
+
+                textInput.value = ""
+                userInput.value = ""
+
+                Toast.makeText(context, "진행중인 To-Do에 추가되었습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "제목과 내용을 입력해주세요.", Toast.LENGTH_SHORT).show()
             }
 
-            Log.d("test", "insert items")
-            pickerDateInitialValue.value = dateInput.value
-
-            //날짜 설정 후 아이템 생성 시 월별 필터링 해당월로 이동하도록 currentDate 값 매칭 코드
-            val shortDate = dateInput.value.split(" ")[0]
-            val formatter = DateTimeFormatter.ofPattern("yy-MM-dd")
-            currentDate.value = LocalDate.parse(shortDate, formatter)
-            Log.d("test", "localDateTime: $shortDate")
-            Log.d("test", "current: ${currentDate.value}")
-
-            textInput.value = ""
-            userInput.value = ""
-            Toast.makeText(context, "진행중인 ToDo에 추가되었습니다.", Toast.LENGTH_SHORT).show()
-        } else if (userInput.value.isEmpty()) {
-            Toast.makeText(context, "제목을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
-        } else if (textInput.value.isEmpty()) {
-            Toast.makeText(context, "내용을 입력하지 않았습니다.", Toast.LENGTH_SHORT).show()
+            if (!isTodoExpanded.value) {
+                isTodoExpanded.value = true
+            }
         }
-    }
-
-    if (!isTodoExpanded.value) {
-        isTodoExpanded.value = true
     }
 }
