@@ -496,46 +496,70 @@ fun PageContent(
                 // 아이템의 documentId 가져오기(파이어스토어 삭제용도)
                 val documentId = itemToDelete.value!!.documentId
                 Log.d("test", "삭제할 documentId: $documentId 아이템: ${itemToDelete.value} ")
-                DeleteAlertDialog(
-                    showDialog = showDialog,
-                    itemType = itemType,
-                    documentId = documentId,
-                    user = user,
-                    itemToDelete = itemToDelete.value!!,
-                    viewModel = viewModel,
-                    context = context
-                )
+                if (user.value?.uid.isNullOrEmpty()) {
+                    // 🔴 다른 기기에서 로그인한 경우 -> 팝업 띄우고 추가/수정 차단
+                    Log.d("handleButtonClick", "Device mismatch detected. Showing AlertDialog.")
+                    //Toast.makeText(context, "다른 기기에서 로그인한 경우입니다.", Toast.LENGTH_SHORT).show()
+                    android.app.AlertDialog.Builder(context)
+                        .setMessage("다른 기기에서 로그인되었습니다.\n삭제는 동일 기기에서만 가능합니다.")
+                        .setPositiveButton("확인") { _, _ ->
+                            navController.navigate("home")
+                        }
+                        .show()
+                } else {
+                    DeleteAlertDialog(
+                        showDialog = showDialog,
+                        itemType = itemType,
+                        documentId = documentId,
+                        user = user,
+                        itemToDelete = itemToDelete.value!!,
+                        viewModel = viewModel,
+                        context = context,
+                    )
+                }
             } else {
                 Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
         fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
-            if (isInProgress) {
-                if (!isEditing.value) {
-                    val updatedItem = item.copy(isCompleted = checked).toItem()
-                    Log.d("ItemUpdate", "Updated items: $updatedItem")
-                    viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
-                    // 파이어스토어에 업데이트 반영
-                    user.value?.uid?.let { uid ->
-                        viewModel.saveItemToFirestore(updatedItem, uid)
+            if (user.value?.uid.isNullOrEmpty()) {
+                // 🔴 다른 기기에서 로그인한 경우 -> 팝업 띄우고 추가/수정 차단
+                Log.d("handleButtonClick", "Device mismatch detected. Showing AlertDialog.")
+                //Toast.makeText(context, "다른 기기에서 로그인한 경우입니다.", Toast.LENGTH_SHORT).show()
+                android.app.AlertDialog.Builder(context)
+                    .setMessage("다른 기기에서 로그인되었습니다.\n체크 상태 변경은 동일 기기에서만 가능합니다.")
+                    .setPositiveButton("확인") { _, _ ->
+                        navController.navigate("home")
                     }
-                    if (checked) addItemToCompleted(item)
-                    items.remove(item)
-                } else {
-                    Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
-                }
+                    .show()
             } else {
-                if (!isEditing.value) {
-                    val updatedItem = item.copy(isCompleted = checked).toItem()
-                    Log.d("ItemUpdate", "Updated items: $updatedItem")
-                    viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
-                    // 파이어스토어에 업데이트 반영
-                    user.value?.uid?.let { uid ->
-                        viewModel.saveItemToFirestore(updatedItem, uid)
+                if (isInProgress) {
+                    if (!isEditing.value) {
+                        val updatedItem = item.copy(isCompleted = checked).toItem()
+                        Log.d("ItemUpdate", "Updated items: $updatedItem")
+                        viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
+                        // 파이어스토어에 업데이트 반영
+                        user.value?.uid?.let { uid ->
+                            viewModel.saveItemToFirestore(updatedItem, uid)
+                        }
+                        if (checked) addItemToCompleted(item)
+                        items.remove(item)
+                    } else {
+                        Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
                     }
-                    completionItems.remove(item)
                 } else {
-                    Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+                    if (!isEditing.value) {
+                        val updatedItem = item.copy(isCompleted = checked).toItem()
+                        Log.d("ItemUpdate", "Updated items: $updatedItem")
+                        viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
+                        // 파이어스토어에 업데이트 반영
+                        user.value?.uid?.let { uid ->
+                            viewModel.saveItemToFirestore(updatedItem, uid)
+                        }
+                        completionItems.remove(item)
+                    } else {
+                        Toast.makeText(context, "수정중인 Todo를 완료해주세요.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -709,7 +733,7 @@ fun DeleteAlertDialog(
     viewModel: ItemViewModel,
     context: Context,
     user: MutableState<FirebaseUser?>,
-    documentId: String
+    documentId: String,
 ) {
     AlertDialog(
         onDismissRequest = { showDialog.value = false },
@@ -717,20 +741,16 @@ fun DeleteAlertDialog(
         text = { Text("정말로 아이템을 삭제하시겠습니까?") },
         confirmButton = {
             TextButton(onClick = {
-                val userId = user.value?.uid ?: ""
-                val userRef = Firebase.firestore.collection("users").document(userId)
-                userRef.get().addOnSuccessListener { document ->
-                    viewModel.deleteItem(itemToDelete.toItem())
-                    user.value?.uid?.let { userId ->
-                        viewModel.deleteItemFromFirestore(documentId, userId) // Firestore에서도 삭제
-                    }
-                    showDialog.value = false
-                    Toast.makeText(
-                        context,
-                        "$itemType ToDo 아이템이 삭제되었습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                viewModel.deleteItem(itemToDelete.toItem())
+                user.value?.uid?.let { userId ->
+                    viewModel.deleteItemFromFirestore(documentId, userId) // Firestore에서도 삭제
                 }
+                showDialog.value = false
+                Toast.makeText(
+                    context,
+                    "$itemType ToDo 아이템이 삭제되었습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }) {
                 Text("예")
             }

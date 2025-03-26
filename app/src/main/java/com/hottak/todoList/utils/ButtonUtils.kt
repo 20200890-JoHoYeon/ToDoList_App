@@ -59,7 +59,7 @@ fun handleButtonClick(
         Log.d("handleButtonClick", "Device mismatch detected. Showing AlertDialog.")
         //Toast.makeText(context, "다른 기기에서 로그인한 경우입니다.", Toast.LENGTH_SHORT).show()
         AlertDialog.Builder(context)
-            .setMessage("다른 기기에서 로그인되었습니다. To-Do 추가/수정은 동일 기기에서만 가능합니다.")
+            .setMessage("다른 기기에서 로그인되었습니다.\n추가/수정은 동일 기기에서만 가능합니다.")
             .setPositiveButton("확인") { _, _ ->
                 navController.navigate("home")
             }
