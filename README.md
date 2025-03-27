@@ -35,7 +35,7 @@ Cotlin Learning Toy Project ToDoList App, which was conducted by the company bef
 
 Click [here]( ) to visit my project.
 
-## Version 3.4
+## Version 3.2
 ~~1. 개인정보 수집 동의 팝업~~ <br />
 2. 설정 페이지(계정 삭제 기능, 모든 데이터 삭제 기능) 추가 <br />
 3. 설정 페이지 UI/UX 전면수정
