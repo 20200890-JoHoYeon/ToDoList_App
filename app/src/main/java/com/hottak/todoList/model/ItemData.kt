@@ -1,7 +1,5 @@
 package com.hottak.todoList.model
 
-import com.google.firebase.firestore.PropertyName
-
 data class ItemData(
     var documentId: String,
 //    val id: Long = 0, //room DB 에서만 사용

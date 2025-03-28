@@ -77,9 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.firestore
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemData
 import com.hottak.todoList.model.ItemViewModel

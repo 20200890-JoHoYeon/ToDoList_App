@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.hottak.todoList.R
 import com.hottak.todoList.model.ItemViewModel
 import com.hottak.todoList.model.ItemViewModelFactory
+import com.hottak.todoList.ui.components.ConfirmationDialog
 
 import com.hottak.todoList.ui.components.TopBar
 
@@ -67,6 +68,9 @@ fun SettingContent(
     viewModel: ItemViewModel,
     user: MutableState<FirebaseUser?>
 ) {
+    var showDeleteDataDialog by remember { mutableStateOf(false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier
@@ -89,7 +93,7 @@ fun SettingContent(
 
         // 2️⃣ 데이터 삭제 (중간 중요도)
         SettingCard(title = "데이터 삭제", description = "앱의 모든 데이터를 삭제합니다.", buttonText = "삭제하기") {
-            deleteUserData(auth, viewModel, context, user)
+            showDeleteDataDialog = true
         }
 
         // 3️⃣ 계정 삭제 (가장 중요하며 신중해야 하는 기능 → 하단 배치)
@@ -99,8 +103,35 @@ fun SettingContent(
             buttonColor = colorResource(R.color.todo_blue),  // 기존보다 은은한 빨간색
             buttonText = "탈퇴하기"
         ) {
-            deleteUserAccount(auth, googleSignInClient, viewModel, navController, context, user)
+            showDeleteAccountDialog = true
         }
+    }
+
+
+    // 데이터 삭제 경고 팝업
+    if (showDeleteDataDialog) {
+        ConfirmationDialog(
+            title = "데이터 삭제",
+            message = "정말로 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+            onConfirm = {
+                deleteUserData(auth, viewModel, context, user)
+                showDeleteDataDialog = false
+            },
+            onDismiss = { showDeleteDataDialog = false }
+        )
+    }
+
+    // 계정 삭제 경고 팝업
+    if (showDeleteAccountDialog) {
+        ConfirmationDialog(
+            title = "계정 삭제",
+            message = "정말로 계정을 삭제하시겠습니까?\n계정이 삭제되면 복구할 수 없습니다.",
+            onConfirm = {
+                deleteUserAccount(auth, googleSignInClient, viewModel, navController, context, user)
+                showDeleteAccountDialog = false
+            },
+            onDismiss = { showDeleteAccountDialog = false }
+        )
     }
 }
 

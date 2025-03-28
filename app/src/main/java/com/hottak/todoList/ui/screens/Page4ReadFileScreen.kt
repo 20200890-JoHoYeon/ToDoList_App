@@ -13,13 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavHostController
 import com.hottak.todoList.ui.components.TopBar
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
 @Composable
-fun Page4ReadFileScreen(navController: NavHostController) {
+fun Page4ReadFileScreen() {
     val context = LocalContext.current
     Scaffold(
         containerColor = Color.White,

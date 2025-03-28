@@ -1,7 +1,6 @@
 package com.hottak.todoList.ui.components
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -52,7 +52,11 @@ fun ItemPopup(
         confirmButton = {
             Row {
                 // 닫기 버튼
-                Button(onClick = onDismiss) {
+                Button(onClick = onDismiss,
+                    colors = if (mode) ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                    else ButtonDefaults.buttonColors()
+
+                ) {
                     Text("닫기")
                 }
 
@@ -62,7 +66,6 @@ fun ItemPopup(
                     Button(
                         onClick = {
                             onDismiss() // 팝업 닫기
-                            //navController.navigate("page1") // Page1으로 이동
                             val encodedDate = URLEncoder.encode(item.date, StandardCharsets.UTF_8.toString()) // URL Encoding 적용
                             Log.d("encodedDate", encodedDate)
                             //25-04-28+06%3A33%3A37 형식

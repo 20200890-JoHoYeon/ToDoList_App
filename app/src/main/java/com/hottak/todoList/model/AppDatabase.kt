@@ -17,9 +17,9 @@ abstract class AppDatabase : RoomDatabase() {
 
         // 🚀 마이그레이션 코드 (버전 1 → 2)
         private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
+            override fun migrate(db: SupportSQLiteDatabase) {
                 // 예: 새로운 컬럼 추가
-                database.execSQL("ALTER TABLE items ADD COLUMN new_column TEXT DEFAULT ''")
+                db.execSQL("ALTER TABLE items ADD COLUMN new_column TEXT DEFAULT ''")
             }
         }
 
