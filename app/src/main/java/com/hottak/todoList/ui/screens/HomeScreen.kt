@@ -1,6 +1,5 @@
 package com.hottak.todoList.ui.screens
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Application
@@ -47,6 +46,11 @@ import com.hottak.todoList.model.ItemViewModelFactory
 import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.GoogleSignInButton
 import android.os.Build
+import androidx.activity.ComponentActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.core.content.edit
+import com.hottak.todoList.ui.components.PrivacyConsentDialog
 import com.hottak.todoList.utils.getDeviceId
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -66,7 +70,12 @@ fun HomeScreen(
     val isUserLoggedIn = remember { mutableStateOf(user.value != null) }
     // 다른 기기에서 이미 로그인 된 상태인지 확인하여 UI 유지하는 변수 (해당 변수가 없으면 로그인 시도 후 로그인 성공 ui가 일시적으로 나타남)
     val isMultiLogin = remember { mutableStateOf(false) }
-    
+
+    // 개인정보 수집 동의 관련 변수
+    val sharedPreferences = remember { context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE) }
+    val isConsentGiven = remember { mutableStateOf(sharedPreferences.getBoolean("PrivacyConsent", false)) }
+    var showDialog by remember { mutableStateOf(!isConsentGiven.value) }
+
     fun fetchDataFromFirestore(userId: String) {
         // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
         val itemsRef = db.collection("users").document(userId).collection("items")
@@ -279,6 +288,8 @@ fun HomeScreen(
         signInLauncher.launch(signInIntent)
     }
 
+
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -318,6 +329,23 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 else if (isUserLoggedIn.value && isMultiLogin.value) { // 로그인 상태가 true일 경우 버튼 표시
+                    // 개인정보 수집 동의 팝업 표시 ,같은 조건문 한번 더 넣은 이유는 시간차 UI 문제로 인해 적용 
+                    if (showDialog && isUserLoggedIn.value && isMultiLogin.value) {
+                        PrivacyConsentDialog(
+                            onConsentGiven = {
+                                sharedPreferences.edit { putBoolean("PrivacyConsent", true) }
+                                isConsentGiven.value = true
+                                showDialog = false
+                                Toast.makeText(context, "개인정보 수집 동의 완료", Toast.LENGTH_SHORT).show()
+                            },
+                            onDismiss = {
+                                Toast.makeText(context, "개인정보 수집 동의 없이는 앱 사용 불가", Toast.LENGTH_SHORT).show()
+                                (context as? ComponentActivity)?.finish()
+                            },
+                            user = user
+                        )
+                    }
+
                     LargeBlackButton(navController, "LIST", "page1", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))
                     Spacer(modifier = Modifier.height(8.dp))
                     LargeBlackButton(navController, "GALLERY", "page2", Modifier.fillMaxWidth().padding(horizontal = 76.dp, vertical = 4.dp))

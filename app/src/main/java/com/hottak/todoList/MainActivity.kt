@@ -23,12 +23,11 @@ import com.hottak.todoList.ui.screens.HomeScreen
 import com.hottak.todoList.ui.screens.Page1ListScreen
 import com.hottak.todoList.ui.screens.Page2GalleryScreen
 import com.hottak.todoList.ui.screens.Page3SettingScreen
-import com.hottak.todoList.ui.screens.Page4ReadFileScreen
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.hottak.todoList.ui.screens.PrivacyConsentDialog
+import com.hottak.todoList.ui.components.PrivacyConsentDialog
 
 
 class MainActivity : ComponentActivity() {
@@ -53,26 +52,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 val navController = rememberNavController()
                 val user = remember { mutableStateOf(auth.currentUser) } // 로그인 상태 저장
-                val context = LocalContext.current
-                val sharedPreferences = remember { context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE) }
-                val isConsentGiven = remember { mutableStateOf(sharedPreferences.getBoolean("PrivacyConsent", false)) }
-                var showDialog by remember { mutableStateOf(!isConsentGiven.value) }
 
-                // 팝업 표시 여부에 따라 다르게 처리
-                if (showDialog) {
-                    PrivacyConsentDialog(
-                        onConsentGiven = {
-                            sharedPreferences.edit { putBoolean("PrivacyConsent", true) }
-                            isConsentGiven.value = true
-                            showDialog = false
-                            Toast.makeText(context, "개인정보 수집 동의 완료", Toast.LENGTH_SHORT).show()
-                        },
-                        onDismiss = {
-                            Toast.makeText(context, "개인정보 수집 동의 없이는 앱 사용 불가", Toast.LENGTH_SHORT).show()
-                            (context as? ComponentActivity)?.finish()
-                        }
-                    )
-                }
 
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") { HomeScreen(navController,
@@ -86,7 +66,6 @@ class MainActivity : ComponentActivity() {
                         navController,
                         googleSignInClient = googleSignInClient, user
                     ) }
-                    composable("page4") { Page4ReadFileScreen(navController) }
                 }
             }
         }
