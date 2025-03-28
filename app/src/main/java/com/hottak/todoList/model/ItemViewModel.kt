@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
@@ -30,6 +31,18 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             repository.insertItem(item)
         }
     }
+
+    fun deleteItems() {
+        viewModelScope.launch {
+            try {
+                repository.deleteItems()
+                Log.d("RoomDB", "Items deleted successfully") // 수정된 로그 메시지
+            } catch (e: Exception) {
+                Log.e("RoomDB", "Error deleting items", e) // 수정된 로그 메시지
+            }
+        }
+    }
+
 
     fun deleteItem(item: Item) {
         viewModelScope.launch {
@@ -91,13 +104,58 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
-
+    //클라우드 DB 단일 삭제
     fun deleteItemFromFirestore(documentId: String, userId: String) {
         val itemRef = db.collection("users").document(userId).collection("items").document(documentId)
 
         itemRef.delete()
             .addOnSuccessListener { Log.d("Firestore", "Item deleted successfully!") }
             .addOnFailureListener { e -> Log.e("Firestore", "Error deleting item", e) }
+    }
+    //클라우드 DB 전체 삭제
+    fun deleteAllItemsFromFirestore(userId: String) {
+        val itemsCollection = db.collection("users").document(userId).collection("items")
+        itemsCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot) {
+                    document.reference.delete()
+                }
+                Log.d("Firestore", "All items deleted from Firestore successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error deleting all items", e)
+            }
+    }
+
+    //클라우드 계정 삭제
+    fun deleteUserAccount(userId: String) {
+        val auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+
+        if (currentUser != null && currentUser.uid == userId) {
+            // 1. Firestore에서 사용자 데이터 삭제
+            val userRef = db.collection("users").document(userId)
+            userRef.delete()
+                .addOnSuccessListener {
+                    Log.d("Firestore", "User data deleted from Firestore")
+
+                    viewModelScope.launch {
+                        // 3. Firebase Authentication에서 사용자 계정 삭제
+                        currentUser.delete()
+                            .addOnSuccessListener {
+                                Log.d("FirebaseAuth", "User account deleted successfully!")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("FirebaseAuth", "Error deleting user account", e)
+                            }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firestore", "Error deleting user data from Firestore", e)
+                }
+        } else {
+            Log.e("FirebaseAuth", "No authenticated user found or userId mismatch")
+        }
     }
 
     // 클라우드 디비에서 불러온 아이템을 추가하거나 업데이트하는 함수

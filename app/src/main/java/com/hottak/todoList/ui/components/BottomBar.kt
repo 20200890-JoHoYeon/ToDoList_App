@@ -31,7 +31,7 @@ fun BottomBar(
     userInput: MutableState<String>,
     textInput: MutableState<String>,
     context: Context,
-    isTodoExpanded: MutableState<Boolean>,  // 상태 값은 MutableState로 받아야 함
+    isTodoExpanded: MutableState<Boolean>,
     isEditing: MutableState<Boolean>,
     editingItem: MutableState<ItemData?>,
     viewModel: ItemViewModel,

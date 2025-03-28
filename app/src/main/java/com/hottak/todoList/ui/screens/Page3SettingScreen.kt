@@ -1,8 +1,8 @@
 package com.hottak.todoList.ui.screens
+
+import android.app.Application
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -10,25 +10,39 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseUser
+import com.hottak.todoList.R
+import com.hottak.todoList.model.ItemViewModel
+import com.hottak.todoList.model.ItemViewModelFactory
+
 import com.hottak.todoList.ui.components.TopBar
 
 @Composable
-fun Page3SettingScreen(navController: NavHostController, googleSignInClient: GoogleSignInClient) {
-    val auth = FirebaseAuth.getInstance() // ✅ FirebaseAuth 인스턴스 생성
+fun Page3SettingScreen(
+    navController: NavHostController,
+    googleSignInClient: GoogleSignInClient,
+    user: MutableState<FirebaseUser?>
+) {
+    val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
+    // 기본 설정
+    val appContext = context.applicationContext as Application
+    val viewModelFactory = ItemViewModelFactory(appContext)
+    val viewModel: ItemViewModel = viewModel(factory = viewModelFactory)
+
     Scaffold(
         containerColor = Color.White,
-        modifier = Modifier.fillMaxSize().background(color = Color.White),
         topBar = { TopBar() },
-        bottomBar = { },
         content = { innerPadding ->
             SettingContent(
                 innerPadding = innerPadding,
@@ -36,6 +50,8 @@ fun Page3SettingScreen(navController: NavHostController, googleSignInClient: Goo
                 auth = auth,
                 googleSignInClient = googleSignInClient,
                 context = context,
+                viewModel = viewModel,
+                user = user
             )
         }
     )
@@ -47,129 +63,123 @@ fun SettingContent(
     navController: NavController,
     auth: FirebaseAuth,
     googleSignInClient: GoogleSignInClient,
-    context: Context
+    context: Context,
+    viewModel: ItemViewModel,
+    user: MutableState<FirebaseUser?>
 ) {
-    fun proceedWithSignOut(userName: String) {
-        auth.signOut()
-        googleSignInClient.signOut().addOnCompleteListener {
-            Log.d("GoogleSignIn", "$userName 님 로그아웃 완료")
-            Toast.makeText(context, "$userName 님 로그아웃 완료", Toast.LENGTH_SHORT).show()
-
-            // 홈 화면으로 이동하면서 기존 백 스택 제거
-            navController.navigate("home") {
-                popUpTo("home") { inclusive = true }
-            }
-        }
-    }
-
-    fun signOutFromGoogle() {
-        val userName = auth.currentUser?.displayName ?: "사용자"
-        val userId = auth.currentUser?.uid
-
-        if (userId != null) {
-            val userRef = FirebaseFirestore.getInstance().collection("users").document(userId)
-
-            // Firestore에서 deviceId 초기화 후 로그아웃 실행
-            userRef.update("deviceId", null)
-                .addOnSuccessListener {
-                    Log.d("GoogleSignIn", "Firestore deviceId 초기화 완료")
-                    proceedWithSignOut(userName)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("GoogleSignIn", "Firestore deviceId 초기화 실패", e)
-                    proceedWithSignOut(userName) // 실패해도 로그아웃 진행
-                }
-        } else {
-            proceedWithSignOut(userName) // userId가 없을 경우 바로 로그아웃
-        }
-    }
-
-
-
-
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-// 추후에 추가할 세팅 옵션 ui
-//        LazyColumn(
-//            modifier = Modifier
-//                .weight(1f)
-//        ) {
-//            items((0..2).toList()) { index ->
-//                SettingItem(index)
-//            }
-//        }
+            .padding(innerPadding)
+            .padding(horizontal = 24.dp),
 
-        // ✅ 로그아웃 버튼을 Column 맨 아래 배치
-        Button(
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White,
-                disabledContainerColor = Color.Gray,
-                disabledContentColor = Color.LightGray
-            ),
-            shape = RoundedCornerShape(12.dp),
-            onClick = { signOutFromGoogle() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 76.dp, vertical = 16.dp)
+    ) {
+        Text(
+            text = "설정",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+
+        // 1️⃣ 로그아웃 (가장 많이 쓰는 기능이므로 상단 배치)
+        SettingCard(title = "로그아웃", description = "현재 계정에서 로그아웃합니다.", buttonText = "로그아웃") {
+            signOutFromGoogle(auth, googleSignInClient, navController, context)
+        }
+
+        // 2️⃣ 데이터 삭제 (중간 중요도)
+        SettingCard(title = "데이터 삭제", description = "앱의 모든 데이터를 삭제합니다.", buttonText = "삭제하기") {
+            deleteUserData(auth, viewModel, context, user)
+        }
+
+        // 3️⃣ 계정 삭제 (가장 중요하며 신중해야 하는 기능 → 하단 배치)
+        SettingCard(
+            title = "계정 삭제",
+            description = "회원 정보를 삭제하고 탈퇴합니다.",
+            buttonColor = colorResource(R.color.todo_blue),  // 기존보다 은은한 빨간색
+            buttonText = "탈퇴하기"
         ) {
-            Text(
-                modifier = Modifier.padding(vertical = 4.dp),
-                text="Logout",
-                fontWeight = FontWeight.Medium
-            )
+            deleteUserAccount(auth, googleSignInClient, viewModel, navController, context, user)
         }
     }
 }
-// 추후에 추가할 세팅 옵션 ui
+
 @Composable
-fun SettingItem(index: Int) {
-    var isChecked by remember { mutableStateOf(false) }
+fun SettingCard(title: String, description: String, buttonColor: Color = Color.Black, buttonText: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+            .shadow(elevation = 3.dp, shape = RoundedCornerShape(10.dp)),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = "설정 항목 $index",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "설정 항목에 대한 설명 $index",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "스위치 항목", fontSize = 14.sp)
-
-                Switch(checked = isChecked, onCheckedChange = {
-                    isChecked = it
-                })
-            }
-
+            Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(text = description, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
             Button(
-                onClick = { /* 버튼 클릭 시 동작 */ },
+                onClick = onClick,
+                colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("설정 적용")
+                Text(buttonText)
             }
         }
     }
 }
+
+fun signOutFromGoogle(
+    auth: FirebaseAuth,
+    googleSignInClient: GoogleSignInClient,
+    navController: NavController,
+    context: Context
+) {
+    val userName = auth.currentUser?.displayName ?: "사용자"
+    auth.signOut()
+    googleSignInClient.signOut().addOnCompleteListener {
+        Toast.makeText(context, "$userName 님 로그아웃 완료", Toast.LENGTH_SHORT).show()
+        navController.navigate("home") {
+            popUpTo("home") { inclusive = true }
+        }
+    }
+}
+
+fun deleteUserData(
+    auth: FirebaseAuth,
+    viewModel: ItemViewModel,
+    context: Context,
+    user: MutableState<FirebaseUser?>
+) {
+    val userId = auth.currentUser?.uid ?: return
+
+    // 🔹 RoomDB와 Firestore에서 모든 아이템 삭제 (viewModel 활용)
+    viewModel.deleteItems()
+    user.value?.uid?.let { userId ->
+        viewModel.deleteAllItemsFromFirestore(userId) // Firestore에서도 삭제
+    }
+
+}
+
+fun deleteUserAccount(
+    auth: FirebaseAuth,
+    googleSignInClient: GoogleSignInClient,
+    viewModel: ItemViewModel,
+    navController: NavController,
+    context: Context,
+    user: MutableState<FirebaseUser?>
+) {
+    val userId = auth.currentUser?.uid ?: return
+
+    // 🔹 Firestore에서 모든 아이템 삭제 (viewModel 활용)
+    deleteUserData(auth, viewModel, context, user)
+    // 🔹 Firestore에서 사용자 계정 삭제 (viewModel 활용)
+    user.value?.uid?.let { userId ->
+        viewModel.deleteUserAccount(userId) // Firestore에서도 삭제
+    }
+    signOutFromGoogle(auth, googleSignInClient, navController, context)
+}
+
+

@@ -31,6 +31,16 @@ class ItemRepository(private val itemDao: ItemDao) {
         }
     }
 
+    suspend fun deleteItems() {
+        try {
+            itemDao.deleteAll()
+            Log.d("RoomDB", "Items deleted successfully")
+        } catch (e: Exception) {
+            Log.e("RoomDB", "Error deleting items", e)
+        }
+    }
+
+
 
     suspend fun deleteItem(item: Item) {
         itemDao.delete(item)

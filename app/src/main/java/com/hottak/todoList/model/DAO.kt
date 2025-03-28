@@ -20,6 +20,10 @@ interface ItemDao {
     @Delete
     suspend fun delete(item: Item)
 
+    // 모든 아이템을 한 번에 삭제하는 메서드
+    @Query("DELETE FROM items")
+    suspend fun deleteAll()
+
     @Update
     suspend fun update(item: Item)
 

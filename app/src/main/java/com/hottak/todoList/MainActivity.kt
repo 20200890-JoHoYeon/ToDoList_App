@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     composable("page2") { Page2GalleryScreen(navController, user) }
                     composable("page3") { Page3SettingScreen(
                         navController,
-                        googleSignInClient = googleSignInClient
+                        googleSignInClient = googleSignInClient, user
                     ) }
                     composable("page4") { Page4ReadFileScreen(navController) }
                 }
