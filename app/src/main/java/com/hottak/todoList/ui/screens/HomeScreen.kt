@@ -77,6 +77,7 @@ fun HomeScreen(
     val showDialog = remember { mutableStateOf(false) }
 
     fun fetchDataFromFirestore(userId: String) {
+
         // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
         val itemsRef = db.collection("users").document(userId).collection("items")
 
@@ -143,7 +144,15 @@ fun HomeScreen(
                 Log.e("GoogleSignIn", "강제 로그아웃 요청 실패", e)
             }
     }
-    
+    fun onLoginFail(isUserLoggedIn: MutableState<Boolean>, isMultiLogin: MutableState<Boolean>) {
+        // 로그인 실패 시 상태 변경
+        isUserLoggedIn.value = false
+        isMultiLogin.value = false
+
+        // 로그인 실패 후 다른 처리 작업이 있으면 추가할 수 있음
+        Log.d("LoginFail", "로그인 실패! isUserLoggedIn: ${isUserLoggedIn.value}, isMultiLogin: ${isMultiLogin.value}")
+    }
+
     DisposableEffect(Unit) {
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             user.value = firebaseAuth.currentUser
@@ -162,6 +171,7 @@ fun HomeScreen(
                             val storedDeviceId = document.getString("deviceId") ?: ""
 
                             if (storedDeviceId.isNotEmpty() && storedDeviceId != currentDeviceId) {
+                                onLoginFail(isMultiLogin, isUserLoggedIn)
                                 // 다른 기기에서 로그인 중인 경우
                                 AlertDialog.Builder(context)
                                     .setTitle("기기 변경 감지")
@@ -176,11 +186,12 @@ fun HomeScreen(
                                             }
                                     }
                                     .setNegativeButton("아니오") { _, _ ->
+
                                         Log.e("GoogleSignIn", "로그인 차단됨")
                                         Toast.makeText(context, "다른 기기에서 접속 중입니다.\n로그아웃 후 다시 시도해주세요.", Toast.LENGTH_LONG).show()
                                         auth.signOut()
                                         user.value = null
-                                        isUserLoggedIn.value = false
+
                                     }
                                     .show()
                             } else {
@@ -198,8 +209,7 @@ fun HomeScreen(
                                 Log.d("GoogleSignIn", "강제 로그아웃 감지됨, 사용자 로그아웃 처리")
                                 auth.signOut()
                                 user.value = null
-                                isUserLoggedIn.value = false
-                                isMultiLogin.value = false
+                                onLoginFail(isMultiLogin, isUserLoggedIn)
 
                                 // 로그아웃 플래그 초기화
                                 userRef.update("forceLogout", false)
@@ -207,7 +217,6 @@ fun HomeScreen(
                         }
                     }
                 }
-                isMultiLogin.value = true
             }
         }
 
@@ -218,10 +227,21 @@ fun HomeScreen(
         }
     }
 
+    fun onLoginSuccess(isUserLoggedIn: MutableState<Boolean>, isMultiLogin: MutableState<Boolean>) {
+        // 로그인 성공 시 상태 변경
+        isUserLoggedIn.value = true
+        isMultiLogin.value = true
+
+        // 로그인 성공 후 다른 처리 작업이 있으면 추가할 수 있음
+        Log.d("LoginSuccess", "로그인 성공! isUserLoggedIn: ${isUserLoggedIn.value}, isMultiLogin: ${isMultiLogin.value}")
+    }
+
+
+
+
     // 로그인 성공 처리 (한 계정, 한 기기 제한 추가)
     fun firebaseAuthWithGoogle(task: Task<GoogleSignInAccount>) {
-        isMultiLogin.value = false
-        isUserLoggedIn.value = false
+        onLoginFail(isMultiLogin, isUserLoggedIn)
         try {
             val account = task.getResult(ApiException::class.java)
             Log.d("GoogleSignIn", "로그인 성공, 계정 정보: ${account?.displayName}")
@@ -247,8 +267,7 @@ fun HomeScreen(
                                             Log.d("GoogleSignIn", "기기 확인 완료, 로그인 성공")
                                             userRef.update("deviceId", currentDeviceId) // 현재 기기로 갱신
                                             Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
-                                            isMultiLogin.value = true
-                                            isUserLoggedIn.value = true
+                                            onLoginSuccess(isMultiLogin, isUserLoggedIn)
                                             fetchDataFromFirestore(userId)
                                         }
                                     } else {
