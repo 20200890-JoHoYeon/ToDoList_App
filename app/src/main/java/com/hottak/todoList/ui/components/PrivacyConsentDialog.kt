@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import android.util.Log
+import com.google.firebase.firestore.SetOptions
 
 @Composable
 fun PrivacyConsentDialog(
@@ -117,6 +118,7 @@ fun PrivacyConsentDialog(
         }
     )
 }
+
 fun saveConsentToFirestore(
     userId: String,
     emailChecked: Boolean,
@@ -131,13 +133,14 @@ fun saveConsentToFirestore(
         "emailChecked" to emailChecked,
         "deviceIdChecked" to deviceIdChecked,
         "inputDataChecked" to inputDataChecked,
-        "consentTimestamp" to Timestamp.now() // Firestore의 Timestamp 객체 사용
+        "consentTimestamp" to Timestamp.now(), // Firestore의 Timestamp 객체 사용
+        "privacyConsentGiven" to true // 동의 완료 여부 저장
     )
 
     Log.d("Firestore", "Attempting to save consent data for user: $userId")
     Log.d("Firestore", "Consent Data: $consentData")
 
-    userRef.set(consentData)
+    userRef.set(consentData, SetOptions.merge())
         .addOnSuccessListener {
             // 성공적인 저장 후 로그
             Log.d("Firestore", "✅ 동의 정보가 Firestore에 성공적으로 저장됨!")

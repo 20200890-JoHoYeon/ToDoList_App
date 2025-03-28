@@ -50,7 +50,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.core.content.edit
+import com.google.firebase.firestore.SetOptions
 import com.hottak.todoList.ui.components.PrivacyConsentDialog
+import com.hottak.todoList.ui.components.saveConsentToFirestore
 import com.hottak.todoList.utils.getDeviceId
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -72,9 +74,7 @@ fun HomeScreen(
     val isMultiLogin = remember { mutableStateOf(false) }
 
     // 개인정보 수집 동의 관련 변수
-    val sharedPreferences = remember { context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE) }
-    val isConsentGiven = remember { mutableStateOf(sharedPreferences.getBoolean("PrivacyConsent", false)) }
-    var showDialog by remember { mutableStateOf(!isConsentGiven.value) }
+    val showDialog = remember { mutableStateOf(false) }
 
     fun fetchDataFromFirestore(userId: String) {
         // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
@@ -254,7 +254,14 @@ fun HomeScreen(
                                     } else {
                                         // 첫 로그인 시 현재 기기 저장
                                         Log.d("GoogleSignIn", "첫 로그인, 기기 등록 완료")
-                                        userRef.set(mapOf("deviceId" to currentDeviceId))
+                                        userRef.set(
+                                            mapOf(
+                                                "deviceId" to currentDeviceId,
+                                                "privacyConsentGiven" to false // 처음 가입한 사용자에게 동의 여부 기본값 설정
+                                            ),
+                                            SetOptions.merge() // 기존 데이터가 있다면 병합
+                                        )
+
                                         isMultiLogin.value = true
                                         Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
                                         fetchDataFromFirestore(userId)
@@ -287,8 +294,6 @@ fun HomeScreen(
         val signInIntent = googleSignInClient.signInIntent
         signInLauncher.launch(signInIntent)
     }
-
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -329,13 +334,29 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 else if (isUserLoggedIn.value && isMultiLogin.value) { // 로그인 상태가 true일 경우 버튼 표시
-                    // 개인정보 수집 동의 팝업 표시 ,같은 조건문 한번 더 넣은 이유는 시간차 UI 문제로 인해 적용 
-                    if (showDialog && isUserLoggedIn.value && isMultiLogin.value) {
+
+                    val userId = user.value?.uid
+
+                    // 사용자 아이디가 있을 경우 Firestore에서 동의 여부를 불러옴
+                    if (userId != null) {
+                        // Firestore에서 'privacyConsentGiven' 값 불러오기
+                        val docRef = db.collection("users").document(userId)
+                        docRef.get().addOnSuccessListener { document ->
+                            if (document != null && document.exists()) {
+                                val privacyConsentGiven = document.getBoolean("privacyConsentGiven") ?: false
+                                showDialog.value = !privacyConsentGiven // 동의하지 않았다면 팝업 표시
+                            }
+                        }.addOnFailureListener {
+                            // 실패 시 처리
+                            Log.e("Firestore", "Failed to get document", it)
+                        }
+                    }
+
+                    // 개인정보 수집 동의 팝업 표시 ,같은 조건문 한번 더 넣은 이유는 시간차 UI 문제로 인해 적용
+                    if (showDialog.value && isUserLoggedIn.value && isMultiLogin.value) {
                         PrivacyConsentDialog(
                             onConsentGiven = {
-                                sharedPreferences.edit { putBoolean("PrivacyConsent", true) }
-                                isConsentGiven.value = true
-                                showDialog = false
+                                showDialog.value = false
                                 Toast.makeText(context, "개인정보 수집 동의 완료", Toast.LENGTH_SHORT).show()
                             },
                             onDismiss = {
@@ -356,3 +377,4 @@ fun HomeScreen(
         }
     )
 }
+
