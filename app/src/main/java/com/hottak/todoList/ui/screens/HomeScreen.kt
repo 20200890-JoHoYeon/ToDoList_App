@@ -153,7 +153,17 @@ fun HomeScreen(
         Log.d("LoginFail", "로그인 실패! isUserLoggedIn: ${isUserLoggedIn.value}, isMultiLogin: ${isMultiLogin.value}")
     }
 
+    fun onLoginSuccess(isUserLoggedIn: MutableState<Boolean>, isMultiLogin: MutableState<Boolean>) {
+        // 로그인 성공 시 상태 변경
+        isUserLoggedIn.value = true
+        isMultiLogin.value = true
+
+        // 로그인 성공 후 다른 처리 작업이 있으면 추가할 수 있음
+        Log.d("LoginSuccess", "로그인 성공! isUserLoggedIn: ${isUserLoggedIn.value}, isMultiLogin: ${isMultiLogin.value}")
+    }
+
     DisposableEffect(Unit) {
+        onLoginSuccess(isMultiLogin, isUserLoggedIn)
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             user.value = firebaseAuth.currentUser
             isUserLoggedIn.value = user.value != null
@@ -227,14 +237,7 @@ fun HomeScreen(
         }
     }
 
-    fun onLoginSuccess(isUserLoggedIn: MutableState<Boolean>, isMultiLogin: MutableState<Boolean>) {
-        // 로그인 성공 시 상태 변경
-        isUserLoggedIn.value = true
-        isMultiLogin.value = true
 
-        // 로그인 성공 후 다른 처리 작업이 있으면 추가할 수 있음
-        Log.d("LoginSuccess", "로그인 성공! isUserLoggedIn: ${isUserLoggedIn.value}, isMultiLogin: ${isMultiLogin.value}")
-    }
 
 
 
