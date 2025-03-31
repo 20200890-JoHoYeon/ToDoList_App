@@ -104,7 +104,7 @@ fun SettingContent(
                 context = context,
                 navController = navController,
                 alertMessage = "다른 기기에서 로그인되었습니다.\n데이터 삭제는 동일 기기에서만 가능합니다.",
-                onSuccess = { showDeleteAccountDialog = true },  // 이 부분이 중요!
+                onSuccess = { showDeleteDataDialog = true },  // 이 부분이 중요!
                 user = user
             )
 
@@ -128,15 +128,15 @@ fun SettingContent(
         }
     }
 
-
     // 데이터 삭제 경고 팝업
     if (showDeleteDataDialog) {
         ConfirmationDialog(
             title = "데이터 삭제",
-            message = "정말로 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+            message = "정말로 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
             onConfirm = {
                 deleteUserData(viewModel, user)
                 showDeleteDataDialog = false
+                Toast.makeText(context, "모든 데이터가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             },
             onDismiss = { showDeleteDataDialog = false }
         )
@@ -150,6 +150,7 @@ fun SettingContent(
             onConfirm = {
                 deleteUserAccount(auth, googleSignInClient, viewModel, navController, context, user)
                 showDeleteAccountDialog = false
+                Toast.makeText(context, "계정이 성공적으로 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             },
             onDismiss = { showDeleteAccountDialog = false }
         )
