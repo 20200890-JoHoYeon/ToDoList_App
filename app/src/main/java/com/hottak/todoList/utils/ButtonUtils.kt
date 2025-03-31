@@ -77,7 +77,8 @@ fun handleButtonClick(
                 item.date = dateInput.value
                 pickerDateInitialValue.value = dateInput.value
 
-                viewModel.updateItem(item.toItem()) // Room DB 업데이트
+                viewModel.fetchDataFromFirestore(userId)
+                viewModel.updateItem(item.toItem(), userId) // Room DB 업데이트
                 viewModel.saveItemToFirestore(item.toItem(), userId) // Firestore 업데이트
 
                 isEditing.value = false
@@ -119,6 +120,7 @@ fun handleButtonClick(
             if (!isTodoExpanded.value) {
                 isTodoExpanded.value = true
             }
+
         }
     }
 }

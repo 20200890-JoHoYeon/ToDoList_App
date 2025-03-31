@@ -2,9 +2,11 @@ package com.hottak.todoList.model
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -25,6 +27,7 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
         allItems = repository.allItems
         allCompletedItems = repository.allCompletedItems
     }
+
 
     fun insertItem(item: Item) {
         viewModelScope.launch {
@@ -50,9 +53,13 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateItem(item: Item) {
+    fun updateItem(item: Item, userId: String) {
         viewModelScope.launch {
+            // Room DB 업데이트
             repository.updateItem(item)
+
+            // Firestore 업데이트
+            saveItemToFirestore(item, userId)  // userId는 현재 로그인한 사용자 ID
         }
     }
 
@@ -158,6 +165,50 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun fetchDataFromFirestore(userId: String) {
+
+        // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
+        val itemsRef = db.collection("users").document(userId).collection("items")
+
+        Log.d("Firestore", "Fetching data for userId: $userId")
+
+        itemsRef.get()
+            .addOnSuccessListener { documents ->
+                Log.d("Firestore", "Data fetch successful!")
+                val itemsList = mutableListOf<Item>()
+                for (document in documents) {
+                    try {
+                        // Firestore에서 ItemData로 변환
+                        val firestoreItem = ItemData(
+                            documentId = document.getString("documentId") ?: "",
+                            title = document.getString("title") ?: "",
+                            content = document.getString("content") ?: "",
+                            date = document.getString("date") ?: "",
+                            isCompleted = document.getBoolean("isCompleted") ?: false
+                        )
+
+                        Log.d("Firestore", "Fetched item: Title = ${firestoreItem.title}, Content = ${firestoreItem.content}, Date = ${firestoreItem.date}, Completed = ${firestoreItem.isCompleted}")
+
+                        // 아이템 추가
+                        itemsList.add(firestoreItem.toItem())
+                    } catch (e: Exception) {
+                        Log.e("Firestore", "Error processing document: ${document.id}", e)
+                    }
+                }
+
+                // Firestore에서 데이터를 가져온 후 Room DB에 저장
+                if (itemsList.isNotEmpty()) {
+                    Log.d("Firestore", "Inserting ${itemsList.size} items into Room DB.")
+                    insertOrUpdateItems(itemsList) // 여러 아이템을 한 번에 저장
+                } else {
+                    Log.d("Firestore", "No items found in Firestore.")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error fetching items: ${e.message}", e)
+            }
+    }
+
     // 클라우드 디비에서 불러온 아이템을 추가하거나 업데이트하는 함수
     fun insertOrUpdateItems(items: List<Item>) {
         // Room DB에 삽입 또는 업데이트
@@ -173,5 +224,4 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 }

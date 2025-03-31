@@ -1,19 +1,13 @@
 package com.hottak.todoList
 
-import android.content.Context
-import android.widget.Toast
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.edit
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,8 +21,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.hottak.todoList.ui.components.PrivacyConsentDialog
-
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -61,7 +53,7 @@ class MainActivity : ComponentActivity() {
                         val page2MoveItemDate = backStackEntry.arguments?.getString("date") ?: "defaultDate"
                         Page1ListScreen(navController, page2MoveItemDate, user)
                     }
-                    composable("page2") { Page2GalleryScreen(navController, user) }
+                    composable("page2") { Page2GalleryScreen(navController) }
                     composable("page3") { Page3SettingScreen(
                         navController,
                         googleSignInClient = googleSignInClient, user

@@ -54,6 +54,7 @@ fun BottomBar(
             Button(
                 colors = getButtonColors(isEditing.value),
                 onClick = {
+
                     handleButtonClick(
                         viewModel= viewModel,
                         isEditing = isEditing,
@@ -73,6 +74,7 @@ fun BottomBar(
                 Text(text = if (isEditing.value) "Edit Complete" else "Add Item")
             }
             if (isEditing.value) {
+
                 Button(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black,

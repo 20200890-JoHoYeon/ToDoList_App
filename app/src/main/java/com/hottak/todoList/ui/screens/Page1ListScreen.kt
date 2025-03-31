@@ -280,7 +280,8 @@ fun PageContent(
     val itemToDelete = remember { mutableStateOf<ItemData?>(null) }
     val addItemToCompleted = { itemData: ItemData ->
         val item = itemData.copy(isCompleted = true).toItem()
-        viewModel.updateItem(item)
+        val userId = user.value?.uid ?: ""
+        viewModel.updateItem(item, userId)
         val updatedItems = viewModel.allItems.value // LiveData의 값을 가져옴
         Log.d("ItemUpdate", "Updated items: $updatedItems")
         Toast.makeText(context, "ToDo가 완료되었습니다.", Toast.LENGTH_SHORT).show()
@@ -520,6 +521,7 @@ fun PageContent(
             }
         }
         fun handleCheckedChange(checked: Boolean, item: ItemData, isInProgress: Boolean) {
+            val userId = user.value?.uid ?: ""
             if (user.value?.uid.isNullOrEmpty()) {
                 // 🔴 다른 기기에서 로그인한 경우 -> 팝업 띄우고 추가/수정 차단
                 Log.d("handleButtonClick", "Device mismatch detected. Showing AlertDialog.")
@@ -535,7 +537,8 @@ fun PageContent(
                     if (!isEditing.value) {
                         val updatedItem = item.copy(isCompleted = checked).toItem()
                         Log.d("ItemUpdate", "Updated items: $updatedItem")
-                        viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
+                        val userId = user.value?.uid ?: ""
+                        viewModel.updateItem(updatedItem, userId)  // Room DB에서 상태 업데이트
                         // 파이어스토어에 업데이트 반영
                         user.value?.uid?.let { uid ->
                             viewModel.saveItemToFirestore(updatedItem, uid)
@@ -549,7 +552,7 @@ fun PageContent(
                     if (!isEditing.value) {
                         val updatedItem = item.copy(isCompleted = checked).toItem()
                         Log.d("ItemUpdate", "Updated items: $updatedItem")
-                        viewModel.updateItem(updatedItem)  // Room DB에서 상태 업데이트
+                        viewModel.updateItem(updatedItem, userId)  // Room DB에서 상태 업데이트
                         // 파이어스토어에 업데이트 반영
                         user.value?.uid?.let { uid ->
                             viewModel.saveItemToFirestore(updatedItem, uid)

@@ -71,49 +71,49 @@ fun HomeScreen(
     // 개인정보 수집 동의 관련 변수
     val showDialog = remember { mutableStateOf(false) }
 
-    fun fetchDataFromFirestore(userId: String) {
-
-        // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
-        val itemsRef = db.collection("users").document(userId).collection("items")
-
-        Log.d("Firestore", "Fetching data for userId: $userId")
-
-        itemsRef.get()
-            .addOnSuccessListener { documents ->
-                Log.d("Firestore", "Data fetch successful!")
-                val itemsList = mutableListOf<Item>()
-                for (document in documents) {
-                    try {
-                        // Firestore에서 ItemData로 변환
-                        val firestoreItem = ItemData(
-                            documentId = document.getString("documentId") ?: "",
-                            title = document.getString("title") ?: "",
-                            content = document.getString("content") ?: "",
-                            date = document.getString("date") ?: "",
-                            isCompleted = document.getBoolean("isCompleted") ?: false
-                        )
-
-                        Log.d("Firestore", "Fetched item: Title = ${firestoreItem.title}, Content = ${firestoreItem.content}, Date = ${firestoreItem.date}, Completed = ${firestoreItem.isCompleted}")
-
-                        // 아이템 추가
-                        itemsList.add(firestoreItem.toItem())
-                    } catch (e: Exception) {
-                        Log.e("Firestore", "Error processing document: ${document.id}", e)
-                    }
-                }
-
-                // Firestore에서 데이터를 가져온 후 Room DB에 저장
-                if (itemsList.isNotEmpty()) {
-                    Log.d("Firestore", "Inserting ${itemsList.size} items into Room DB.")
-                    viewModel.insertOrUpdateItems(itemsList) // 여러 아이템을 한 번에 저장
-                } else {
-                    Log.d("Firestore", "No items found in Firestore.")
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "Error fetching items: ${e.message}", e)
-            }
-    }
+//    fun fetchDataFromFirestore(userId: String) {
+//
+//        // Firestore의 users/{userId}/items 경로에서 데이터 가져오기
+//        val itemsRef = db.collection("users").document(userId).collection("items")
+//
+//        Log.d("Firestore", "Fetching data for userId: $userId")
+//
+//        itemsRef.get()
+//            .addOnSuccessListener { documents ->
+//                Log.d("Firestore", "Data fetch successful!")
+//                val itemsList = mutableListOf<Item>()
+//                for (document in documents) {
+//                    try {
+//                        // Firestore에서 ItemData로 변환
+//                        val firestoreItem = ItemData(
+//                            documentId = document.getString("documentId") ?: "",
+//                            title = document.getString("title") ?: "",
+//                            content = document.getString("content") ?: "",
+//                            date = document.getString("date") ?: "",
+//                            isCompleted = document.getBoolean("isCompleted") ?: false
+//                        )
+//
+//                        Log.d("Firestore", "Fetched item: Title = ${firestoreItem.title}, Content = ${firestoreItem.content}, Date = ${firestoreItem.date}, Completed = ${firestoreItem.isCompleted}")
+//
+//                        // 아이템 추가
+//                        itemsList.add(firestoreItem.toItem())
+//                    } catch (e: Exception) {
+//                        Log.e("Firestore", "Error processing document: ${document.id}", e)
+//                    }
+//                }
+//
+//                // Firestore에서 데이터를 가져온 후 Room DB에 저장
+//                if (itemsList.isNotEmpty()) {
+//                    Log.d("Firestore", "Inserting ${itemsList.size} items into Room DB.")
+//                    viewModel.insertOrUpdateItems(itemsList) // 여러 아이템을 한 번에 저장
+//                } else {
+//                    Log.d("Firestore", "No items found in Firestore.")
+//                }
+//            }
+//            .addOnFailureListener { e ->
+//                Log.e("Firestore", "Error fetching items: ${e.message}", e)
+//            }
+//    }
 
     LaunchedEffect(Unit) {
         val currentUser = auth.currentUser
@@ -123,7 +123,7 @@ fun HomeScreen(
         if (isUserLoggedIn.value) {
             currentUser?.uid?.let { userId ->
                 Log.d("HomeScreen", "App launched, fetching data for userId: $userId")
-                fetchDataFromFirestore(userId)  // 앱 실행 시 Firestore 데이터 가져오기
+                viewModel.fetchDataFromFirestore(userId)  // 앱 실행 시 Firestore 데이터 가져오기
             }
         }
     }
@@ -187,7 +187,7 @@ fun HomeScreen(
                                                 Log.d("GoogleSignIn", "기기 변경 승인됨, 다른 기기 로그아웃 처리")
                                                 forceLogoutPreviousDevice(userId) // 이전 기기 로그아웃 처리
                                                 Toast.makeText(context, "다른 기기의 로그아웃\n처리가 완료되었습니다.", Toast.LENGTH_SHORT).show()
-                                                fetchDataFromFirestore(userId)
+                                                viewModel.fetchDataFromFirestore(userId)
                                             }
                                     }
                                     .setNegativeButton("아니오") { _, _ ->
@@ -202,7 +202,7 @@ fun HomeScreen(
                             } else {
                                 // 동일 기기이거나 최초 로그인 -> Firestore에 현재 deviceId 저장
                                 userRef.update("deviceId", currentDeviceId)
-                                fetchDataFromFirestore(userId) // Firestore 데이터 불러오기
+                                viewModel.fetchDataFromFirestore(userId) // Firestore 데이터 불러오기
                             }
                         }
 
@@ -263,7 +263,7 @@ fun HomeScreen(
                                             userRef.update("deviceId", currentDeviceId) // 현재 기기로 갱신
                                             Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
                                             onLoginSuccess(isMultiLogin, isUserLoggedIn)
-                                            fetchDataFromFirestore(userId)
+                                            viewModel.fetchDataFromFirestore(userId)
                                         }
                                     } else {
                                         // 첫 로그인 시 현재 기기 저장
@@ -278,7 +278,7 @@ fun HomeScreen(
 
                                         isMultiLogin.value = true
                                         Toast.makeText(context, "로그인 성공", Toast.LENGTH_SHORT).show()
-                                        fetchDataFromFirestore(userId)
+                                        viewModel.fetchDataFromFirestore(userId)
                                     }
                                 }
                                 .addOnFailureListener { e ->
