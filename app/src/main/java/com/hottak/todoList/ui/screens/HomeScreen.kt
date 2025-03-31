@@ -47,12 +47,8 @@ import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.GoogleSignInButton
 import android.os.Build
 import androidx.activity.ComponentActivity
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.core.content.edit
 import com.google.firebase.firestore.SetOptions
 import com.hottak.todoList.ui.components.PrivacyConsentDialog
-import com.hottak.todoList.ui.components.saveConsentToFirestore
 import com.hottak.todoList.utils.getDeviceId
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -236,9 +232,6 @@ fun HomeScreen(
             auth.removeAuthStateListener(authStateListener)
         }
     }
-
-
-
 
 
 
