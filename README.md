@@ -29,7 +29,7 @@ localhost:3000/admin/index
 -->
 ## Development Story :question:
 
-Cotlin Learning Toy Project ToDoList App, which was conducted by the company before the new training
+Kotlin Learning Toy Project ToDoList App, which was conducted by the company before the new training
 
 ## Footer :exclamation:
 
