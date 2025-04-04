@@ -46,8 +46,6 @@ import com.hottak.todoList.model.toItem
 import com.hottak.todoList.ui.components.GoogleSignInButton
 import android.os.Build
 import androidx.activity.ComponentActivity
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import com.google.firebase.firestore.SetOptions
 import com.hottak.todoList.ui.components.PrivacyConsentDialog
 import com.hottak.todoList.utils.getDeviceId

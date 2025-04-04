@@ -161,7 +161,7 @@ fun Page1ListScreen(
     val editingItem = remember { mutableStateOf<ItemData?>(null) }//수정모드 대상 아이템
     val editingItemDate = remember { mutableStateOf<String?>(null) }//수정모드 대상 아이템 날짜
     val isDatePickerVisible =  remember { mutableStateOf(false) }//상단 년월 필터링 설정픽커 구분자
-    val refreshTrigger = remember { mutableStateOf(0) }//강제 트리거용 상태 추가
+    val refreshTrigger = remember { mutableIntStateOf(0) }//강제 트리거용 상태 추가
 
 
     // 날짜를 변경하는 함수
