@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val user = remember { mutableStateOf(auth.currentUser) } // 로그인 상태 저장
 
-
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") { HomeScreen(navController,
                         googleSignInClient = googleSignInClient, user) }

@@ -2,11 +2,9 @@ package com.hottak.todoList.model
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -224,4 +222,6 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+
 }

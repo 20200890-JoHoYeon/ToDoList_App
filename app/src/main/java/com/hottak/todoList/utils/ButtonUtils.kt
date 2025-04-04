@@ -77,7 +77,7 @@ fun handleButtonClick(
                 item.date = dateInput.value
                 pickerDateInitialValue.value = dateInput.value
 
-                viewModel.fetchDataFromFirestore(userId)
+                //fetchDataFromFirestore(userId)
                 viewModel.updateItem(item.toItem(), userId) // Room DB 업데이트
                 viewModel.saveItemToFirestore(item.toItem(), userId) // Firestore 업데이트
 
