@@ -52,6 +52,7 @@ fun handleButtonClick(
     currentDate: MutableState<LocalDate>,
     user: MutableState<FirebaseUser?>,
     navController: NavController,
+    refreshTrigger:MutableState<Int>
 ) {
     val userId = user.value?.uid ?: ""
     if (user.value?.uid.isNullOrEmpty()) {
@@ -80,7 +81,7 @@ fun handleButtonClick(
                 //fetchDataFromFirestore(userId)
                 viewModel.updateItem(item.toItem(), userId) // Room DB 업데이트
                 viewModel.saveItemToFirestore(item.toItem(), userId) // Firestore 업데이트
-
+                refreshTrigger.value++
                 isEditing.value = false
                 editingItem.value = null
                 textInput.value = ""

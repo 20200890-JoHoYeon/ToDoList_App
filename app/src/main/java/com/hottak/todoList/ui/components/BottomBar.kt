@@ -39,7 +39,8 @@ fun BottomBar(
     pickerDateInitialValue: MutableState<String>,
     currentDate: MutableState<LocalDate>,
     user: MutableState<FirebaseUser?>,
-    navController: NavController
+    navController: NavController,
+    refreshTrigger: MutableState<Int>
 ) {
     BottomAppBar(
         containerColor = Color.White,
@@ -67,7 +68,8 @@ fun BottomBar(
                         currentDate = currentDate,
                         pickerDateInitialValue = pickerDateInitialValue,
                         navController = navController,
-                        user = user
+                        user = user,
+                        refreshTrigger = refreshTrigger
                     )
                 }
             ) {

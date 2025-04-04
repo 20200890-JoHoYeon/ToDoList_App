@@ -53,6 +53,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -160,6 +161,7 @@ fun Page1ListScreen(
     val editingItem = remember { mutableStateOf<ItemData?>(null) }//수정모드 대상 아이템
     val editingItemDate = remember { mutableStateOf<String?>(null) }//수정모드 대상 아이템 날짜
     val isDatePickerVisible =  remember { mutableStateOf(false) }//상단 년월 필터링 설정픽커 구분자
+    val refreshTrigger = remember { mutableStateOf(0) }//강제 트리거용 상태 추가
 
 
     // 날짜를 변경하는 함수
@@ -181,18 +183,43 @@ fun Page1ListScreen(
     val completionItems = allCompletedItems.toMutableStateList()
 
     // 필터링된 진행중인 할 일 목록
-    val filteredItems = items.filter { item ->
-        val itemDate = LocalDateTime.parse(item.date, formatter)
-        val itemYearMonth = YearMonth.from(itemDate)
-        itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
-    }.toMutableStateList()
+    val filteredItems by remember(allItems, currentDate.value, refreshTrigger.value) {
+        derivedStateOf {
+            allItems.filter { item ->
+                val itemDate = LocalDateTime.parse(item.date, formatter)
+                val itemYearMonth = YearMonth.from(itemDate)
+                itemYearMonth.year == currentDate.value.year &&
+                        itemYearMonth.monthValue == currentDate.value.monthValue
+            }.toMutableStateList()
+        }
+    }
 
     // 필터링된 완료된 할 일 목록
-    val filteredCompletionItems = completionItems.filter { item ->
-        val itemDate = LocalDateTime.parse(item.date, formatter)
-        val itemYearMonth = YearMonth.from(itemDate)
-        itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
-    }.toMutableStateList()
+    val filteredCompletionItems by remember(allCompletedItems, currentDate.value, refreshTrigger.value) {
+        derivedStateOf {
+            allCompletedItems.filter { item ->
+                val itemDate = LocalDateTime.parse(item.date, formatter)
+                val itemYearMonth = YearMonth.from(itemDate)
+                itemYearMonth.year == currentDate.value.year &&
+                        itemYearMonth.monthValue == currentDate.value.monthValue
+            }.toMutableStateList()
+        }
+    }
+
+//    // 필터링된 진행중인 할 일 목록
+//    val filteredItems = items.filter { item ->
+//        val itemDate = LocalDateTime.parse(item.date, formatter)
+//        val itemYearMonth = YearMonth.from(itemDate)
+//        itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
+//    }.toMutableStateList()
+//
+//    // 필터링된 완료된 할 일 목록
+//    val filteredCompletionItems = completionItems.filter { item ->
+//        val itemDate = LocalDateTime.parse(item.date, formatter)
+//        val itemYearMonth = YearMonth.from(itemDate)
+//        itemYearMonth.year == currentDate.value.year && itemYearMonth.monthValue == currentDate.value.monthValue
+//    }.toMutableStateList()
+
 
     Log.d("test", "투두 페이지 진입")
     Log.d("test", "allItems 데이터베이스에서 가져온 아이템 아이템데이터 타입으로 변환: $allItems")
@@ -219,6 +246,7 @@ fun Page1ListScreen(
                 pickerDateInitialValue = pickerDateInitialValue,
                 navController = navController,
                 user = user,
+                refreshTrigger = refreshTrigger
             )
         },
         content = { innerPadding ->
